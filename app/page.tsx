@@ -1,0 +1,279 @@
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import AdSlot from './components/AdSlot';
+import HeroSection from './components/HeroSection';
+
+export const metadata: Metadata = {
+  title: 'JigMerge – Free Online Jigsaw Solitaire Puzzle Game',
+  description: 'Play JigMerge free online! A unique blend of jigsaw puzzle and solitaire. Drag, drop, and swap tiles to restore beautiful images across 25+ levels in 5 categories.',
+  keywords: ['JigMerge', 'jigsaw puzzle', 'solitaire puzzle', 'online puzzle game', 'free puzzle game', 'brain games', 'tile swap puzzle'],
+};
+
+export default function Home() {
+  return (
+    <>
+      {/* ── Hero ── */}
+      <HeroSection />
+
+      {/* ── Play Now Embedded Game ── */}
+      <section style={{
+        width: '100%',
+        backgroundColor: 'var(--bg)',
+        padding: '2rem 0',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderBottom: '1px solid var(--border-light)'
+      }}>
+        <div style={{
+          width: '100%',
+          maxWidth: '800px',
+          height: '800px',
+          margin: '0 auto',
+          position: 'relative',
+          borderRadius: '16px',
+          overflow: 'hidden',
+          boxShadow: 'var(--shadow-lg)',
+          border: '1px solid var(--border-light)'
+        }}>
+          <iframe
+            src="/game/index.html"
+            title="Play JigMerge Free Online"
+            style={{ width: '100%', height: '100%', border: 'none' }}
+          />
+        </div>
+      </section>
+
+      {/* ── Social Proof Strip ── */}
+      <section style={{
+        padding: '2rem 0',
+        borderTop: '1px solid var(--border-light)',
+        borderBottom: '1px solid var(--border-light)',
+      }}>
+        <div className="container" style={{
+          display: 'flex',
+          justifyContent: 'center',
+          gap: '3rem',
+          flexWrap: 'wrap',
+        }}>
+          {[
+            { value: '25+', label: 'Handcrafted Levels' },
+            { value: '5', label: 'Image Categories' },
+            { value: '0', label: 'Downloads Needed' },
+            { value: '100%', label: 'Free Forever' },
+          ].map((stat) => (
+            <div key={stat.label} style={{ textAlign: 'center' }}>
+              <div style={{
+                fontFamily: 'var(--font-display)',
+                fontSize: '1.5rem',
+                fontWeight: 700,
+                color: 'var(--text-primary)',
+                letterSpacing: '-0.03em',
+              }}>
+                {stat.value}
+              </div>
+              <div style={{
+                fontSize: '0.75rem',
+                color: 'var(--text-tertiary)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.06em',
+                marginTop: '0.2rem',
+              }}>
+                {stat.label}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <AdSlot type="banner" />
+
+      {/* ── What Makes It Different ── */}
+      <section className="section">
+        <div className="container">
+          <h2 className="section-title">Not your ordinary puzzle game</h2>
+          <p className="section-subtitle">
+            JigMerge reimagines classic puzzles with a tile-swapping mechanic
+            that is easy to learn and endlessly satisfying to master.
+          </p>
+
+          <div className="grid-3">
+            <article className="card feature-card">
+              <div className="feature-icon" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /></svg>
+              </div>
+              <h3>Swap, Don&apos;t Fit</h3>
+              <p>Forget fiddly jigsaw shapes. Drag tiles on a clean grid to swap positions — intuitive from the very first move.</p>
+            </article>
+
+            <article className="card feature-card">
+              <div className="feature-icon" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v4" /><path d="M12 18v4" /><path d="M4.93 4.93l2.83 2.83" /><path d="M16.24 16.24l2.83 2.83" /><path d="M2 12h4" /><path d="M18 12h4" /><path d="M4.93 19.07l2.83-2.83" /><path d="M16.24 7.76l2.83-2.83" /></svg>
+              </div>
+              <h3>Smart Merging</h3>
+              <p>Place two neighbors correctly and they fuse into one group — moving together and shrinking the puzzle as you go.</p>
+            </article>
+
+            <article className="card feature-card">
+              <div className="feature-icon" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" /><polyline points="14,2 14,8 20,8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /><polyline points="10,9 9,9 8,9" /></svg>
+              </div>
+              <h3>Memorize First</h3>
+              <p>Every level begins with a 5-second preview of the complete image. Study it, strategize, then watch tiles scatter.</p>
+            </article>
+
+            <article className="card feature-card">
+              <div className="feature-icon" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><polyline points="12,6 12,12 16,14" /></svg>
+              </div>
+              <h3>Track Your Speed</h3>
+              <p>A move counter and timer track your performance. Challenge yourself to beat your personal bests.</p>
+            </article>
+
+            <article className="card feature-card">
+              <div className="feature-icon" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2" /><line x1="8" y1="21" x2="16" y2="21" /><line x1="12" y1="17" x2="12" y2="21" /></svg>
+              </div>
+              <h3>Play Anywhere</h3>
+              <p>Desktop, tablet, or phone — JigMerge adapts to your screen. No installs, just open and play.</p>
+            </article>
+
+            <article className="card feature-card">
+              <div className="feature-icon" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
+              </div>
+              <h3>Totally Free</h3>
+              <p>No paywalls, no premium tiers, no ads-to-unlock. Every level, every category — free.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Categories Showcase ── */}
+      <section className="section" style={{ background: 'var(--bg-secondary)' }}>
+        <div className="container">
+          <h2 className="section-title">Five worlds to explore</h2>
+          <p className="section-subtitle">
+            From serene landscapes to mouthwatering dishes — each category offers
+            a unique visual journey across five progressively harder levels.
+          </p>
+
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(5, 1fr)',
+            gap: '1rem',
+            maxWidth: '700px',
+            margin: '0 auto',
+          }}>
+            {[
+              { name: 'Animals', icon: 'A' },
+              { name: 'Nature', icon: 'N' },
+              { name: 'Cities', icon: 'C' },
+              { name: 'Art', icon: 'R' },
+              { name: 'Food', icon: 'F' },
+            ].map((cat) => (
+              <div key={cat.name} style={{
+                textAlign: 'center',
+                padding: '1.75rem 0.75rem',
+                background: 'var(--bg-card)',
+                borderRadius: 'var(--radius-lg)',
+                border: '1px solid var(--border-light)',
+                transition: 'all var(--transition)',
+                cursor: 'default',
+              }}>
+                <div style={{
+                  width: '44px',
+                  height: '44px',
+                  borderRadius: '12px',
+                  background: 'var(--accent-soft)',
+                  color: 'var(--accent)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 0.75rem',
+                  fontWeight: 700,
+                  fontSize: '1.1rem',
+                  fontFamily: 'var(--font-display)',
+                }}>
+                  {cat.icon}
+                </div>
+                <span style={{
+                  fontSize: '0.8rem',
+                  fontWeight: 500,
+                  color: 'var(--text-primary)',
+                }}>
+                  {cat.name}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <AdSlot type="banner" />
+
+      {/* ── How It Feels ── */}
+      <section className="section">
+        <div className="container" style={{ maxWidth: '720px' }}>
+          <h2 className="section-title">Designed for calm focus</h2>
+          <p className="section-subtitle">
+            JigMerge is as much about the journey as the solution. Every interaction
+            is crafted to feel smooth, satisfying, and never frustrating.
+          </p>
+
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: '1.25rem',
+          }}>
+            {[
+              { title: 'Smooth animations', desc: 'Tiles glide into place with buttery 60fps physics. No jank, no stutter.' },
+              { title: 'Satisfying feedback', desc: 'Correct placements snap with visual feedback that makes every move feel rewarding.' },
+              { title: 'Clean interface', desc: 'No clutter, no distractions. Just you, the puzzle, and a minimal, focused UI.' },
+              { title: 'Brain-friendly pacing', desc: 'Progressive difficulty that challenges without overwhelming. Play at your own pace.' },
+            ].map((item) => (
+              <div key={item.title} style={{
+                padding: '1.75rem',
+                background: 'var(--bg-card)',
+                borderRadius: 'var(--radius-lg)',
+                border: '1px solid var(--border-light)',
+              }}>
+                <h3 style={{ fontSize: '0.95rem', marginBottom: '0.4rem' }}>{item.title}</h3>
+                <p style={{
+                  fontSize: '0.85rem',
+                  color: 'var(--text-secondary)',
+                  lineHeight: 1.6,
+                  margin: 0,
+                }}>{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Final CTA ── */}
+      <section style={{
+        padding: '5rem 0',
+        background: 'var(--bg-secondary)',
+        textAlign: 'center',
+        borderTop: '1px solid var(--border-light)',
+      }}>
+        <div className="container">
+          <h2 style={{ marginBottom: '0.5rem' }}>Your next puzzle is one click away</h2>
+          <p style={{
+            color: 'var(--text-secondary)',
+            maxWidth: '400px',
+            margin: '0 auto 2rem',
+            fontSize: '0.95rem',
+            lineHeight: 1.6,
+          }}>
+            No signup, no download. Open your browser for a few calm minutes of puzzling.
+          </p>
+          <Link href="/play" className="btn btn-primary" style={{ padding: '0.875rem 2rem', fontSize: '0.95rem' }}>
+            Play JigMerge Now
+          </Link>
+        </div>
+      </section>
+    </>
+  );
+}

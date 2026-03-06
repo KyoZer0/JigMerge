@@ -1,0 +1,528 @@
+:root {
+    --bg-color: #553522; /* Deep earthy brown for background */
+    --wood-light: #f4a259;
+    --wood-main: #d97828;
+    --wood-dark: #8c4212;
+    --grass-light: #94df58;
+    --grass-main: #6abf28;
+    --grass-dark: #3a7511;
+    --yellow-star: #ffcc00;
+    --text-main: #ffffff;
+    --grid-gap: 2px;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+    font-family: 'Fredoka', 'Outfit', sans-serif;
+}
+
+body {
+    background-color: var(--bg-color);
+    /* Soft grid pattern for background mimicking casual mobile games */
+    background-image: 
+        linear-gradient(rgba(0,0,0,0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,0,0,0.1) 1px, transparent 1px);
+    background-size: 40px 40px;
+    color: var(--text-main);
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+}
+
+#game-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    z-index: 1;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Main Menu */
+#main-menu {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    z-index: 1000;
+    background: rgba(85, 53, 34, 0.4); /* subtle darkening */
+}
+
+.menu-top {
+    display: flex;
+    align-items: center;
+    padding: 30px 20px;
+    gap: 15px;
+}
+
+/* Wood Text styling for a bubbly, heavy appearance */
+.wood-text {
+    font-weight: 900;
+    color: var(--text-main);
+    letter-spacing: 2px;
+    -webkit-text-stroke: 2px var(--wood-dark);
+    text-shadow: 0 4px 0 var(--wood-dark), 0 6px 4px rgba(0,0,0,0.3);
+    text-transform: uppercase;
+}
+
+.game-title {
+    font-size: 42px;
+}
+
+/* Wooden Panels */
+.wood-panel, .wood-panel-small {
+    background: linear-gradient(to bottom, var(--wood-light), var(--wood-main));
+    border: 4px solid var(--wood-dark);
+    border-radius: 16px;
+    box-shadow: inset 0 -4px 0 rgba(0,0,0,0.15), inset 0 4px 0 rgba(255,255,255,0.2), 0 8px 12px rgba(0,0,0,0.3);
+    position: relative;
+}
+
+/* Decorate the panels with little grass pseudo-elements */
+.wood-panel::after, .wood-panel-small::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 10%;
+    width: 80%;
+    height: 12px;
+    background: var(--grass-main);
+    border-radius: 10px 10px 0 0;
+    border: 3px solid var(--wood-dark);
+    border-bottom: none;
+    z-index: -1;
+}
+
+.coin-counter {
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 900;
+    font-size: 20px;
+    color: var(--text-main);
+    -webkit-text-stroke: 1px var(--wood-dark);
+    border-radius: 20px;
+}
+
+.coin-icon {
+    font-size: 22px;
+    filter: drop-shadow(0 2px 0 var(--wood-dark));
+}
+
+.menu-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+    flex: 1;
+    justify-content: center;
+}
+
+.menu-graphic {
+    width: 260px;
+    height: 340px;
+    background: linear-gradient(to bottom, #d29158, #b8692a);
+    border-radius: 24px;
+    position: relative;
+}
+
+.menu-bottom {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    padding: 30px 20px 40px;
+}
+
+/* Chunky Wood Buttons */
+.wood-btn {
+    background: linear-gradient(to bottom, var(--wood-light), var(--wood-main));
+    border: 4px solid var(--wood-dark);
+    color: var(--text-main);
+    font-weight: 900;
+    text-transform: uppercase;
+    cursor: pointer;
+    position: relative;
+    transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+    -webkit-text-stroke: 1.5px var(--wood-dark);
+    text-shadow: 0 2px 0 var(--wood-dark);
+    /* Creates the thick 3D bottom edge */
+    box-shadow: inset 0 -4px 0 rgba(0,0,0,0.2), inset 0 4px 0 rgba(255,255,255,0.2), 0 8px 0 var(--wood-dark), 0 12px 10px rgba(0,0,0,0.3);
+}
+
+.wood-btn:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.05);
+}
+
+.wood-btn:active, .wood-btn.active {
+    transform: translateY(6px);
+    box-shadow: inset 0 -2px 0 rgba(0,0,0,0.2), inset 0 4px 0 rgba(255,255,255,0.2), 0 2px 0 var(--wood-dark), 0 4px 5px rgba(0,0,0,0.2);
+}
+
+.wood-btn.large {
+    font-size: 28px;
+    padding: 16px 50px;
+    border-radius: 40px;
+    letter-spacing: 2px;
+    /* Make the large button more vibrant (orange/yellow) */
+    background: linear-gradient(to bottom, #ffca58, #fb8500);
+}
+
+.wood-btn.small {
+    font-size: 16px;
+    padding: 12px 24px;
+    border-radius: 30px;
+    letter-spacing: 1px;
+}
+
+.wood-btn.icon {
+    padding: 10px;
+    width: 50px;
+    height: 50px;
+    border-radius: 25px;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Header UI */
+#game-header {
+    height: 80px;
+    padding: 0 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 100;
+}
+
+.header-left, .header-center, .header-right {
+    flex: 1;
+    display: flex;
+    align-items: center;
+}
+
+.header-left { justify-content: flex-start; }
+.header-center { justify-content: center; }
+.header-right { justify-content: flex-end; }
+
+.level-info {
+    font-size: 28px;
+    white-space: nowrap;
+}
+
+/* Level Select Screen */
+#level-select-screen {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    z-index: 1000;
+}
+
+.level-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    padding: 20px 30px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.level-btn {
+    aspect-ratio: 1;
+    border-radius: 20px;
+    font-size: 28px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    box-shadow: inset 0 -4px 0 rgba(0,0,0,0.2), inset 0 4px 0 rgba(255,255,255,0.2), 0 8px 0 var(--wood-dark), 0 12px 10px rgba(0,0,0,0.3);
+}
+
+.level-btn.locked {
+    background: linear-gradient(to bottom, #777, #555);
+    border-color: #333;
+    color: #999;
+    box-shadow: inset 0 -4px 0 rgba(0,0,0,0.5), inset 0 4px 0 rgba(255,255,255,0.1), 0 4px 0 #222, 0 6px 5px rgba(0,0,0,0.3);
+    pointer-events: none;
+    -webkit-text-stroke: 1px #333;
+    text-shadow: none;
+    transform: translateY(4px);
+}
+
+.level-btn .stars-mini {
+    font-size: 14px;
+    color: var(--yellow-star);
+    -webkit-text-stroke: 1px var(--wood-dark);
+}
+
+/* Modals & Overlays */
+.fullscreen-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(5px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    opacity: 1;
+    transition: opacity 0.3s;
+}
+
+.fullscreen-overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.modal-content {
+    padding: 40px 50px;
+    text-align: center;
+    transform: scale(1);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+.fullscreen-overlay.hidden .modal-content {
+    transform: scale(0.8);
+}
+
+/* Board Area Customization */
+/* Explicitly size the outer container to 616x416 to accommodate the 600x400 inner playable area + 8px borders (16px total) */
+#board {
+    width: 616px; 
+    height: 416px;
+    box-sizing: border-box; /* 616 - 16 = 600 content width */
+    margin: auto;
+    position: relative;
+    border: 8px solid var(--wood-dark);
+    border-radius: 12px;
+    background: #6c462c;
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.4), 0 10px 15px rgba(0,0,0,0.3);
+    background-image: radial-gradient(rgba(0,0,0,0.1) 2px, transparent 2px);
+    background-size: 8px 8px; 
+}
+
+/* Puzzle Pieces */
+.piece-container {
+    position: absolute;
+    cursor: grab;
+    will-change: transform, left, top;
+    perspective: 1000px;
+    z-index: 10;
+}
+
+.piece-inner {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transform-style: preserve-3d;
+}
+
+.piece-inner.flipped {
+    transform: rotateY(180deg);
+}
+
+.piece-front, .piece-back {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    border-radius: 8px;
+}
+
+.piece-front {
+    transform: rotateY(180deg);
+}
+
+.piece-front::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    border-radius: 8px;
+    pointer-events: none;
+}
+
+/* Card Backs - Wooden Tile Aesthetic */
+.piece-back {
+    background: linear-gradient(to bottom, #d29158, #b8692a);
+    border: 3px solid var(--wood-dark);
+    border-radius: 10px;
+    box-shadow: inset 0 -4px 0 rgba(0,0,0,0.15), inset 0 4px 0 rgba(255,255,255,0.2);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    transform: rotateZ(0deg);
+    position: relative;
+    overflow: hidden;
+}
+
+.piece-back::before {
+    content: '';
+    width: 32px;
+    height: 32px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffcc00' stroke='%238c4212' stroke-width='2' stroke-linejoin='round'%3E%3Cpolygon points='12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2'%3E%3C/polygon%3E%3C/svg%3E");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    filter: drop-shadow(0 2px 0 var(--wood-dark));
+    opacity: 0.8;
+}
+
+/* SVG Helpers */
+.icon-svg {
+    width: 24px;
+    height: 24px;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.wood-btn.icon .icon-svg {
+    width: 28px;
+    height: 28px;
+}
+
+.stars-svg {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 25px;
+}
+
+.stars-svg .icon-svg {
+    width: 48px;
+    height: 48px;
+    animation: floatStars 2s infinite ease-in-out alternate;
+    filter: drop-shadow(0 4px 0 var(--wood-dark));
+}
+
+/* Dragging State */
+.piece-container.dragging {
+    cursor: grabbing;
+    z-index: 1000;
+}
+.piece-container.dragging .piece-front,
+.piece-container.dragging .piece-back {
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
+    border: 3px solid white;
+}
+.piece-container.dragging .piece-front {
+    filter: brightness(1.15) contrast(1.1);
+}
+
+/* Merge Glow */
+.piece-container.merge-flash .piece-front {
+    animation: mergeScale 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes mergeScale {
+    0% { transform: scale(1); filter: brightness(1); }
+    50% { transform: scale(1.1); filter: brightness(1.4); z-index: 999; }
+    100% { transform: scale(1); filter: brightness(1); }
+}
+
+/* Memorize Overlay */
+#memorize-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(2px);
+    z-index: 2000;
+    opacity: 1;
+    transition: opacity 0.5s;
+    pointer-events: none;
+}
+
+#memorize-overlay.hidden {
+    opacity: 0;
+}
+
+/* Bubbly Cartoon Text */
+.bubbly-text {
+    font-size: 72px;
+    font-weight: 900;
+    letter-spacing: 4px;
+    color: var(--yellow-star);
+    text-transform: uppercase;
+    position: relative;
+    -webkit-text-stroke: 4px var(--wood-dark);
+    text-shadow: 0 8px 0 var(--wood-dark), 0 12px 10px rgba(0,0,0,0.4);
+    animation: bounceScale 1.5s infinite cubic-bezier(0.28, 0.84, 0.42, 1);
+}
+
+@keyframes bounceScale {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.08) translateY(-10px); }
+}
+
+/* Win Overlay */
+#win-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(5px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    opacity: 1;
+    transition: opacity 0.5s ease;
+}
+
+#win-overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Using existing .wood-panel logic mixed with .win-modal */
+.win-modal {
+    padding: 50px 70px;
+    text-align: center;
+    transform: scale(1);
+    transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+#win-overlay.hidden .win-modal {
+    transform: scale(0.8);
+}
+
+.win-modal h2 {
+    font-size: 42px;
+    margin-bottom: 10px;
+}
+
+.stars {
+    font-size: 48px;
+    letter-spacing: 10px;
+    text-shadow: 0 4px 0 var(--wood-dark);
+}
+
+@keyframes floatStars {
+    from { transform: translateY(0px); }
+    to { transform: translateY(-8px); }
+}
