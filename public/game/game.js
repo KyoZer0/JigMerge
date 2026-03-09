@@ -821,6 +821,7 @@ function mergeGroupsSilent(groupIdA, groupIdB) {
 }
 
 function checkWinCondition() {
+    if (typeof isTutorialActive !== 'undefined' && isTutorialActive) return;
     setTimeout(() => {
         const remainingGroups = Object.keys(groups);
         if (remainingGroups.length === 1) {
@@ -1099,7 +1100,15 @@ function generatePuzzleGrid(categoryId) {
 
 // ── Menu Button Handlers ──
 const START_BTN = document.getElementById('start-btn');
-START_BTN.addEventListener('click', showCategorySelect);
+START_BTN.addEventListener('click', () => {
+    const isTutorialDone = localStorage.getItem('jigmerge_tutorial_done') === 'true';
+    if (!isTutorialDone) {
+        showGame();
+        initTutorial();
+    } else {
+        showCategorySelect();
+    }
+});
 
 document.getElementById('back-to-main-btn').addEventListener('click', () => {
     // If we are looking at puzzles, go back to categories
