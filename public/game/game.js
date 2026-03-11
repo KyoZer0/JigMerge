@@ -24,6 +24,11 @@ const BEST_STARS_EL = document.getElementById('best-stars');
 const BEST_TIME_EL = document.getElementById('best-time');
 const SHOP_GRID_EL = document.getElementById('shop-grid');
 const SIDEBAR_TABS = document.querySelectorAll('.sidebar-tab');
+const COMING_SOON_PREVIEW_EL = document.getElementById('coming-soon-preview');
+const COMING_SOON_COPY_EL = document.getElementById('coming-soon-copy');
+const GAME_SIDEBAR_EL = document.getElementById('game-sidebar');
+const SIDEBAR_TOGGLE_EL = document.getElementById('sidebar-toggle');
+const SIDEBAR_HOVER_ZONE_EL = document.getElementById('sidebar-hover-zone');
 
 // ── Game Config ──
 let currentCategory = 1;
@@ -47,6 +52,15 @@ let isZenMode = false;
 let isPeekActive = false;
 let peekTimeout = null;
 let mergeFeedbackTimeout = null;
+let comingSoonInterval = null;
+let sidebarHideTimer = null;
+let sidebarExpandedWidth = 148;
+
+const SHOP_TEASERS = [
+    { title: 'Golden frame board', copy: 'A warm carved border skin with soft glow edges.' },
+    { title: 'Lantern peek boost', copy: 'Longer peeks and gentler guide cues for tricky sets.' },
+    { title: 'Mossy lodge theme', copy: 'A forest table skin with matching sounds and particles.' },
+];
 
 const THEMES = [
     {
@@ -297,6 +311,22 @@ function renderShop() {
         card.appendChild(actionBtn);
         SHOP_GRID_EL.appendChild(card);
     });
+}
+
+function startComingSoonRotation() {
+    if (!COMING_SOON_PREVIEW_EL || !COMING_SOON_COPY_EL) return;
+    let teaserIndex = 0;
+
+    const renderTeaser = () => {
+        const teaser = SHOP_TEASERS[teaserIndex];
+        COMING_SOON_PREVIEW_EL.textContent = teaser.title;
+        COMING_SOON_COPY_EL.textContent = teaser.copy;
+        teaserIndex = (teaserIndex + 1) % SHOP_TEASERS.length;
+    };
+
+    renderTeaser();
+    clearInterval(comingSoonInterval);
+    comingSoonInterval = setInterval(renderTeaser, 2800);
 }
 
 function getMergeTier(groupSize) {
@@ -1378,6 +1408,7 @@ function showGame() {
     updateModeLabels();
     updateCoinDisplays();
     openSidebarPanel('reference-panel');
+    setTimeout(syncSidebarBehavior, 60);
 }
 
 // ── Level Grids ──
@@ -1513,14 +1544,13 @@ SIDEBAR_TABS.forEach((tab) => {
     tab.addEventListener('click', () => {
         playSound('click');
         const panelId = tab.getAttribute('data-sidebar-panel');
-        SIDEBAR_TABS.forEach((item) => item.classList.toggle('active', item === tab));
-        document.querySelectorAll('.sidebar-panel').forEach((panel) => {
-            panel.classList.toggle('active', panel.id === panelId);
-        });
+        openSidebarPanel(panelId);
     });
 });
 
 function openSidebarPanel(panelId) {
+    if (!GAME_SIDEBAR_EL) return;
+    expandSidebar(true);
     SIDEBAR_TABS.forEach((tab) => {
         tab.classList.toggle('active', tab.getAttribute('data-sidebar-panel') === panelId);
     });
@@ -1528,6 +1558,117 @@ function openSidebarPanel(panelId) {
         panel.classList.toggle('active', panel.id === panelId);
     });
 }
+
+function isSidebarAutoMode() {
+    return !!(window.matchMedia && window.matchMedia('(hover: hover) and (min-width: 981px)').matches);
+}
+
+function updateSidebarWidthCache() {
+    if (!GAME_SIDEBAR_EL) return sidebarExpandedWidth;
+    const width = Math.max(132, Math.round(GAME_SIDEBAR_EL.getBoundingClientRect().width || GAME_SIDEBAR_EL.scrollWidth || sidebarExpandedWidth));
+    sidebarExpandedWidth = width;
+    return sidebarExpandedWidth;
+}
+
+function clearSidebarHideTimer() {
+    clearTimeout(sidebarHideTimer);
+    sidebarHideTimer = null;
+}
+
+function expandSidebar(immediate = false) {
+    if (!GAME_SIDEBAR_EL || !GAME_AREA) return;
+    clearSidebarHideTimer();
+    GAME_SIDEBAR_EL.classList.remove('collapsed');
+    GAME_AREA.classList.remove('sidebar-hidden');
+
+    if (!isSidebarAutoMode()) {
+        gsap.set(GAME_SIDEBAR_EL, { clearProps: 'x,opacity,pointerEvents' });
+        gsap.set(GAME_AREA, { clearProps: 'gridTemplateColumns' });
+        return;
+    }
+
+    const width = updateSidebarWidthCache();
+    gsap.killTweensOf([GAME_SIDEBAR_EL, GAME_AREA]);
+    gsap.to(GAME_AREA, {
+        gridTemplateColumns: `minmax(0, 1fr) ${width}px`,
+        duration: immediate ? 0.18 : 0.24,
+        ease: 'power2.out',
+    });
+    gsap.to(GAME_SIDEBAR_EL, {
+        x: 0,
+        opacity: 1,
+        pointerEvents: 'auto',
+        duration: immediate ? 0.18 : 0.24,
+        ease: 'power2.out',
+    });
+}
+
+function collapseSidebar(immediate = false) {
+    if (!GAME_SIDEBAR_EL || !GAME_AREA || !isSidebarAutoMode()) return;
+    clearSidebarHideTimer();
+    updateSidebarWidthCache();
+    GAME_SIDEBAR_EL.classList.add('collapsed');
+    GAME_AREA.classList.add('sidebar-hidden');
+    gsap.killTweensOf([GAME_SIDEBAR_EL, GAME_AREA]);
+    gsap.to(GAME_AREA, {
+        gridTemplateColumns: 'minmax(0, 1fr) 0px',
+        duration: immediate ? 0.2 : 0.28,
+        ease: 'power2.inOut',
+    });
+    gsap.to(GAME_SIDEBAR_EL, {
+        x: sidebarExpandedWidth + 18,
+        opacity: 0.2,
+        pointerEvents: 'none',
+        duration: immediate ? 0.2 : 0.28,
+        ease: 'power2.inOut',
+    });
+}
+
+function scheduleSidebarCollapse() {
+    if (!isSidebarAutoMode()) return;
+    clearSidebarHideTimer();
+    sidebarHideTimer = setTimeout(() => collapseSidebar(), 280);
+}
+
+function syncSidebarBehavior() {
+    if (!GAME_SIDEBAR_EL || !GAME_AREA) return;
+    clearSidebarHideTimer();
+
+    if (isSidebarAutoMode()) {
+        updateSidebarWidthCache();
+        collapseSidebar(true);
+        return;
+    }
+
+    GAME_SIDEBAR_EL.classList.remove('collapsed');
+    GAME_AREA.classList.remove('sidebar-hidden');
+    gsap.killTweensOf([GAME_SIDEBAR_EL, GAME_AREA]);
+    gsap.set(GAME_SIDEBAR_EL, { clearProps: 'x,opacity,pointerEvents' });
+    gsap.set(GAME_AREA, { clearProps: 'gridTemplateColumns' });
+}
+
+if (SIDEBAR_TOGGLE_EL && GAME_SIDEBAR_EL) {
+    SIDEBAR_TOGGLE_EL.addEventListener('click', () => {
+        playSound('click');
+        if (isSidebarAutoMode() && !GAME_SIDEBAR_EL.classList.contains('collapsed')) collapseSidebar();
+        else {
+            const activeTab = document.querySelector('.sidebar-tab.active');
+            openSidebarPanel(activeTab ? activeTab.getAttribute('data-sidebar-panel') : 'reference-panel');
+        }
+    });
+}
+
+if (GAME_SIDEBAR_EL) {
+    GAME_SIDEBAR_EL.addEventListener('mouseenter', clearSidebarHideTimer);
+    GAME_SIDEBAR_EL.addEventListener('mouseleave', scheduleSidebarCollapse);
+}
+
+if (SIDEBAR_HOVER_ZONE_EL) {
+    SIDEBAR_HOVER_ZONE_EL.addEventListener('mouseenter', () => expandSidebar());
+    SIDEBAR_HOVER_ZONE_EL.addEventListener('mouseleave', scheduleSidebarCollapse);
+}
+
+window.addEventListener('resize', syncSidebarBehavior);
 
 const pauseBtn = document.getElementById('pause-btn');
 if (pauseBtn) {
@@ -1566,17 +1707,28 @@ function generatePuzzleGrid(categoryId) {
 
     const config = LEVELS[categoryId];
     const groupSize = 4;
+    const isLastPlayedCategory = (playerProgress.lastPlayed || defaultProgress.lastPlayed).category === categoryId;
+    const lastPlayedPuzzle = (playerProgress.lastPlayed || defaultProgress.lastPlayed).puzzleIndex;
 
     for (let groupStart = 0; groupStart < maxPuzzles; groupStart += groupSize) {
         const groupEnd = Math.min(groupStart + groupSize, maxPuzzles);
         const groupSection = document.createElement('section');
         groupSection.className = 'puzzle-group';
+        const coverImgUrl = `/levels/${config.folder}/${encodeURIComponent(images[groupStart])}`;
+        const groupHasLastPlayed = isLastPlayedCategory && lastPlayedPuzzle >= groupStart && lastPlayedPuzzle < groupEnd;
 
         const clearedCount = Array.from({ length: groupEnd - groupStart }, (_, offset) => getBestScore(categoryId, groupStart + offset)).filter(Boolean).length;
         groupSection.innerHTML = `
             <div class="puzzle-group-header">
                 <div class="puzzle-group-title">Set ${Math.floor(groupStart / groupSize) + 1}</div>
                 <div class="puzzle-group-meta">${clearedCount}/${groupEnd - groupStart} cleared</div>
+            </div>
+            <div class="puzzle-group-cover">
+                <div class="puzzle-group-cover-thumb" style="background-image:url('${coverImgUrl}')"></div>
+                <div class="puzzle-group-cover-meta">
+                    ${groupHasLastPlayed ? '<div class="last-played-pill">Last played</div>' : ''}
+                    <div class="puzzle-group-desc">A small run of ${groupEnd - groupStart} puzzles with shared mood and pacing.</div>
+                </div>
             </div>
             <div class="puzzle-group-grid"></div>
         `;
@@ -1591,11 +1743,13 @@ function generatePuzzleGrid(categoryId) {
             const best = getBestScore(categoryId, i);
             const starText = best ? `${'★'.repeat(best.stars)}${'☆'.repeat(3 - best.stars)}` : 'New';
             const imgUrl = `/levels/${config.folder}/${encodeURIComponent(images[i])}`;
+            const isLastPlayed = isLastPlayedCategory && lastPlayedPuzzle === i;
 
             btn.innerHTML = `
                 <div style="width: 100%; flex: 1; min-height: 0; background-image: url('${imgUrl}'); background-size: contain; background-repeat: no-repeat; background-position: center; border-radius: 6px; margin-bottom: 6px;"></div>
                 <span style="font-size: 13px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; width: 100%; text-align: center; letter-spacing: 0;">${puzzleName}</span>
                 <span class="stars-mini" style="font-size: 10px; letter-spacing: 0; margin-top: 4px;">${starText}</span>
+                ${isLastPlayed ? '<span class="level-size" style="font-size:10px; letter-spacing:0.04em;">Resume</span>' : ''}
             `;
 
             btn.addEventListener('click', () => {
@@ -1686,6 +1840,8 @@ updateCoinDisplays();
 updateModeLabels();
 updateCollectionProgress();
 renderShop();
+startComingSoonRotation();
+syncSidebarBehavior();
 
 if (localStorage.getItem('jigmerge_tutorial_done') === 'true') {
     const { category, puzzleIndex } = playerProgress.lastPlayed || defaultProgress.lastPlayed;

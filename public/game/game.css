@@ -575,6 +575,34 @@ body::before {
     margin-bottom: 12px;
 }
 
+.puzzle-group-cover {
+    display: grid;
+    grid-template-columns: 78px minmax(0, 1fr);
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 12px;
+    padding: 10px;
+    border-radius: 16px;
+    background: rgba(255, 248, 239, 0.04);
+    border: 1px solid rgba(255, 248, 239, 0.06);
+}
+
+.puzzle-group-cover-thumb {
+    width: 78px;
+    aspect-ratio: 1;
+    border-radius: 14px;
+    background-size: cover;
+    background-position: center;
+    border: 1px solid rgba(255, 248, 239, 0.12);
+}
+
+.puzzle-group-cover-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-width: 0;
+}
+
 .puzzle-group-title {
     font-size: 13px;
     font-weight: 800;
@@ -586,6 +614,24 @@ body::before {
 .puzzle-group-meta {
     font-size: 10px;
     color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.puzzle-group-desc {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.4;
+}
+
+.last-played-pill {
+    align-self: flex-start;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: rgba(232, 191, 115, 0.16);
+    color: var(--accent);
+    font-size: 10px;
+    font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.08em;
 }
@@ -692,7 +738,7 @@ body::before {
    ═══════════════════════════════════════════ */
 #game-area {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 136px;
+    grid-template-columns: minmax(0, 1fr) minmax(132px, 16vw);
     justify-content: stretch;
     align-items: stretch;
     flex: 1;
@@ -700,6 +746,7 @@ body::before {
     overflow: hidden;
     padding: 10px 12px 12px;
     gap: 8px;
+    position: relative;
 }
 
 .board-wrap {
@@ -760,26 +807,126 @@ body::before {
     box-shadow: var(--shadow-lg);
     overflow-y: auto;
     overflow-x: hidden;
+    transition: width 0.22s ease, min-width 0.22s ease, transform 0.22s ease, opacity 0.22s ease;
+    min-width: 132px;
+    position: relative;
+    z-index: 3;
+}
+
+#game-sidebar.collapsed {
+    min-width: 64px;
+}
+
+.sidebar-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 8px 8px 0;
+}
+
+.sidebar-topbar-label {
+    font-size: 10px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 800;
+}
+
+.sidebar-toggle-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 12px;
+    background: rgba(255, 248, 239, 0.08);
+}
+
+#game-sidebar.collapsed .sidebar-topbar-label,
+#game-sidebar.collapsed .sidebar-panel {
+    display: none;
+}
+
+#game-sidebar.collapsed .sidebar-tabs {
+    grid-template-columns: 1fr;
+    padding-bottom: 8px;
+}
+
+#game-sidebar.collapsed .sidebar-toggle-btn {
+    margin-left: auto;
+}
+
+#game-sidebar.collapsed .sidebar-toggle-btn .icon-svg {
+    transform: rotate(180deg);
+}
+
+#sidebar-hover-zone {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 26px;
+    height: 100%;
+    z-index: 2;
+}
+
+#sidebar-edge-hint {
+    position: absolute;
+    top: 50%;
+    right: 6px;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 10px;
+    border-radius: 999px;
+    background: rgba(35, 22, 15, 0.72);
+    border: 1px solid rgba(232, 191, 115, 0.22);
+    color: var(--text-muted);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    z-index: 2;
+}
+
+.edge-hint-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: var(--accent);
+    box-shadow: 0 0 12px rgba(232, 191, 115, 0.45);
+}
+
+.edge-hint-text {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 800;
+}
+
+#game-area.sidebar-hidden #sidebar-edge-hint {
+    opacity: 1;
 }
 
 .sidebar-tabs {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 4px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
     padding: 8px 8px 0;
 }
 
 .sidebar-tab {
     border: 1px solid var(--border-warm);
-    background: rgba(255, 248, 239, 0.04);
+    background: rgba(255, 248, 239, 0.05);
     color: var(--text-dim);
-    border-radius: 12px;
-    padding: 7px 0;
+    border-radius: 14px;
+    padding: 8px 4px;
     font-weight: 700;
     cursor: pointer;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
+    min-height: 34px;
+    gap: 5px;
+    transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
 }
 
 .sidebar-tab-icon {
@@ -787,10 +934,23 @@ body::before {
     height: 14px;
 }
 
+.sidebar-tab-text {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    line-height: 1;
+}
+
 .sidebar-tab.active {
     color: var(--text-main);
-    background: rgba(255, 248, 239, 0.09);
+    background: linear-gradient(180deg, rgba(255, 248, 239, 0.12), rgba(255, 248, 239, 0.06));
     border-color: var(--theme-border-strong);
+    box-shadow: inset 0 0 0 1px rgba(255, 248, 239, 0.05);
+}
+
+.sidebar-tab:hover {
+    transform: translateY(-1px);
+    color: var(--text-main);
 }
 
 .sidebar-panel {
@@ -802,7 +962,7 @@ body::before {
 }
 
 .sidebar-section {
-    padding: 10px 10px 8px;
+    padding: 10px 10px 10px;
 }
 
 .sidebar-divider {
@@ -827,7 +987,7 @@ body::before {
 }
 
 .sidebar-stat-card {
-    padding: 9px 10px;
+    padding: 10px;
     border-radius: 16px;
     background: rgba(255, 248, 239, 0.05);
     border: 1px solid var(--border-warm);
@@ -836,7 +996,7 @@ body::before {
 .sidebar-stat-card strong {
     display: block;
     margin-top: 4px;
-    font-size: 14px;
+    font-size: clamp(12px, 1.1vw, 14px);
 }
 
 .sidebar-stat-label {
@@ -848,7 +1008,7 @@ body::before {
 
 .ref-image-box {
     width: 100%;
-    aspect-ratio: 3/4;
+    aspect-ratio: 0.78;
     border-radius: var(--radius-sm);
     border: 1px solid var(--border-warm);
     background-color: rgba(0, 0, 0, 0.2);
@@ -884,6 +1044,7 @@ body::before {
 
 .sidebar-powerups .powerup-btn {
     padding: 8px 10px;
+    min-height: 38px;
 }
 
 .ref-peek-btn {
@@ -900,6 +1061,10 @@ body::before {
     background: linear-gradient(180deg, rgba(255, 248, 239, 0.05), rgba(255, 248, 239, 0.02));
 }
 
+.coming-soon-row .wood-btn {
+    flex-shrink: 0;
+}
+
 .coming-soon-badge {
     align-self: flex-start;
     padding: 4px 8px;
@@ -914,6 +1079,21 @@ body::before {
 
 .coming-soon-title {
     font-size: 14px;
+}
+
+.coming-soon-preview {
+    min-height: 68px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 10px;
+    border-radius: 14px;
+    border: 1px dashed var(--theme-border-strong);
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 700;
+    background: rgba(255, 248, 239, 0.03);
 }
 
 .coming-soon-row {
@@ -1026,6 +1206,8 @@ body::before {
 #sound-toggle-game .icon-svg {
     width: 12px;
     height: 12px;
+    display: block;
+    margin: auto;
 }
 
 .stars-svg {
@@ -1531,6 +1713,24 @@ body::before {
         gap: 0;
         overflow-x: hidden;
         overflow-y: auto;
+        min-width: 0;
+    }
+
+    #sidebar-hover-zone {
+        display: none;
+    }
+
+    #game-sidebar.collapsed .sidebar-panel {
+        display: none;
+    }
+
+    #game-sidebar.collapsed .sidebar-tabs {
+        grid-template-columns: repeat(3, 1fr);
+        padding-bottom: 0;
+    }
+
+    #sidebar-edge-hint {
+        display: none;
     }
 
     .sidebar-section {
@@ -1548,6 +1748,14 @@ body::before {
 
     .puzzle-group-grid {
         grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .puzzle-group-cover {
+        grid-template-columns: 64px minmax(0, 1fr);
+    }
+
+    .puzzle-group-cover-thumb {
+        width: 64px;
     }
 }
 
@@ -1575,11 +1783,44 @@ body::before {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
+    .puzzle-group-cover {
+        grid-template-columns: 1fr;
+    }
+
+    .puzzle-group-cover-thumb {
+        width: 100%;
+    }
+
     .game-toolbar {
         width: 100%;
         padding: 10px 10px 0;
         gap: 8px;
         flex-wrap: wrap;
+    }
+
+    .sidebar-topbar {
+        padding: 8px 8px 4px;
+    }
+
+    #sidebar-hover-zone {
+        display: none;
+    }
+
+    #sidebar-edge-hint {
+        display: none;
+    }
+
+    .sidebar-tab {
+        min-height: 40px;
+        gap: 4px;
+    }
+
+    .sidebar-tab-text {
+        font-size: 8px;
+    }
+
+    .ref-image-box {
+        aspect-ratio: 1.05;
     }
 
     .header-left,

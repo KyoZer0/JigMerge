@@ -238,6 +238,16 @@
 
             <!-- Reference Image Sidebar -->
             <aside id="game-sidebar">
+                <div class="sidebar-topbar">
+                    <span class="sidebar-topbar-label">Sidebar</span>
+                    <button id="sidebar-toggle" class="wood-btn icon small sidebar-toggle-btn" aria-label="Collapse sidebar">
+                        <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="4" y="5" width="16" height="14" rx="3"></rect>
+                            <path d="M14 5v14"></path>
+                            <path d="M10 9l-3 3 3 3"></path>
+                        </svg>
+                    </button>
+                </div>
                 <div class="sidebar-tabs">
                     <button class="sidebar-tab" data-sidebar-panel="summary-panel" aria-label="Session panel">
                         <svg class="sidebar-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -245,6 +255,7 @@
                             <path d="M18 20V4"></path>
                             <path d="M6 20v-6"></path>
                         </svg>
+                        <span class="sidebar-tab-text">Run</span>
                     </button>
                     <button class="sidebar-tab active" data-sidebar-panel="reference-panel" aria-label="Reference panel">
                         <svg class="sidebar-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -252,12 +263,14 @@
                             <circle cx="8.5" cy="9" r="1.5"></circle>
                             <path d="M21 15l-5-5L5 21"></path>
                         </svg>
+                        <span class="sidebar-tab-text">Ref</span>
                     </button>
                     <button class="sidebar-tab" data-sidebar-panel="tools-panel" aria-label="Tools panel">
                         <svg class="sidebar-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M14.7 6.3a4 4 0 1 0 3 3L22 13.6 19.6 16l-1.4-1.4-1.9 1.9"></path>
                             <path d="M4 20l6.5-6.5"></path>
                         </svg>
+                        <span class="sidebar-tab-text">Drops</span>
                     </button>
                 </div>
 
@@ -312,7 +325,8 @@
                     <div class="coming-soon-card">
                         <div class="coming-soon-badge">Coming Soon</div>
                         <strong class="coming-soon-title">Power-ups and skins</strong>
-                        <p class="sidebar-hint">Future shop items will land here with boosts, themes, and collectible helpers.</p>
+                        <div class="coming-soon-preview" id="coming-soon-preview">Golden frame board</div>
+                        <p class="sidebar-hint" id="coming-soon-copy">Future shop items will land here with boosts, themes, and collectible helpers.</p>
                         <div class="coming-soon-row">
                             <span class="powerup-count" id="collection-progress">0%</span>
                             <button class="wood-btn small subtle-btn" id="btn-open-shop-side">Shop</button>
@@ -321,6 +335,11 @@
                 </div>
                 </div>
             </aside>
+            <div id="sidebar-hover-zone" aria-hidden="true"></div>
+            <div id="sidebar-edge-hint" aria-hidden="true">
+                <span class="edge-hint-dot"></span>
+                <span class="edge-hint-text">Tools</span>
+            </div>
         </div>
 
         <!-- Memorize Overlay -->
