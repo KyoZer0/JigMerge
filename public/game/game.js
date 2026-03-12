@@ -1,9 +1,9 @@
-/* ═══════════════════════════════════════════
-   JigMerge — Game Engine
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   JigMerge â€” Game Engine
    Grid-based swap + merge puzzle
-   ═══════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
-// ── DOM References ──
+// â”€â”€ DOM References â”€â”€
 const BOARD = document.getElementById('board');
 const LEVEL_DISPLAY = document.getElementById('game-level-title');
 const NEXT_BTN = document.getElementById('next-level-btn');
@@ -29,20 +29,25 @@ const COMING_SOON_COPY_EL = document.getElementById('coming-soon-copy');
 const GAME_SIDEBAR_EL = document.getElementById('game-sidebar');
 const SIDEBAR_TOGGLE_EL = document.getElementById('sidebar-toggle');
 const SIDEBAR_HOVER_ZONE_EL = document.getElementById('sidebar-hover-zone');
+const SIDEBAR_EDGE_HINT_EL = document.getElementById('sidebar-edge-hint');
 const PERKS_SIDEBAR_EL = document.getElementById('perks-sidebar');
 const PERKS_SIDEBAR_TOGGLE_EL = document.getElementById('perks-sidebar-toggle');
 const PERKS_HOVER_ZONE_EL = document.getElementById('perks-hover-zone');
+const PERKS_EDGE_HINT_EL = document.getElementById('perks-edge-hint');
+const MOBILE_PANEL_BACKDROP_EL = document.getElementById('mobile-panel-backdrop');
+const MOBILE_SIDEBAR_TRIGGER_EL = document.getElementById('mobile-sidebar-trigger');
+const MOBILE_PERKS_TRIGGER_EL = document.getElementById('mobile-perks-trigger');
 const SIDEBAR_MODE_EL = document.getElementById('sidebar-mode');
 const SIDEBAR_MOVES_EL = document.getElementById('sidebar-moves');
 const SIDEBAR_TIME_EL = document.getElementById('sidebar-time');
 const SIDEBAR_MERGE_EL = document.getElementById('sidebar-merge');
 
-// ── Game Config ──
+// â”€â”€ Game Config â”€â”€
 let currentCategory = 1;
 let currentPuzzleIndex = 0;
 let unlockedLevel = 1;
 let pieces = [];
-let groups = {};        // groupId → [pieceIds]
+let groups = {};        // groupId â†’ [pieceIds]
 let nextGroupId = 1;
 let grid = [];          // 2D array: grid[row][col] = pieceId
 let gridRows = 0;
@@ -50,7 +55,7 @@ let gridCols = 0;
 let pieceW = 0;
 let pieceH = 0;
 
-// ── Stats ──
+// â”€â”€ Stats â”€â”€
 let moveCount = 0;
 let timerSeconds = 0;
 let timerInterval = null;
@@ -66,6 +71,8 @@ let sidebarPinnedOpen = false;
 let perksSidebarExpandedWidth = 180;
 let perksSidebarHideTimer = null;
 let perksSidebarPinnedOpen = false;
+
+// Viewport height logic removed in favor of CSS 100% height
 
 const SHOP_TEASERS = [
     { title: 'Golden frame board', copy: 'A warm carved border skin with soft glow edges.' },
@@ -287,7 +294,7 @@ function updateCollectionProgress() {
 
 function updateBestScorePanel(categoryId, puzzleIndex) {
     const best = getBestScore(categoryId, puzzleIndex);
-    if (BEST_STARS_EL) BEST_STARS_EL.textContent = best ? `${'★'.repeat(best.stars)}${'☆'.repeat(3 - best.stars)}` : 'New';
+    if (BEST_STARS_EL) BEST_STARS_EL.textContent = best ? `${'â˜…'.repeat(best.stars)}${'â˜†'.repeat(3 - best.stars)}` : 'New';
     if (BEST_TIME_EL) BEST_TIME_EL.textContent = best && best.bestTime > 0 ? formatTime(best.bestTime) : '--:--';
 }
 
@@ -427,7 +434,7 @@ function toggleZenMode() {
     if (!isZenMode) startTimer();
 }
 
-function getRewardSummary(categoryId, puzzleIndex) {
+function getRewardSummary(categoryId) {
     const par = getLevelPar(categoryId);
     const efficientMoves = moveCount <= par.moveTarget;
     let stars = 1;
@@ -486,7 +493,7 @@ function persistWinResult(categoryId, puzzleIndex, result) {
     updateCollectionProgress();
 }
 
-// ── Audio System ──
+// â”€â”€ Audio System â”€â”€
 class SoundEngine {
     constructor() {
         this.ctx = null;
@@ -500,7 +507,7 @@ class SoundEngine {
         try {
             this.ctx = new (window.AudioContext || window.webkitAudioContext)();
             this.initialized = true;
-        } catch (e) {
+        } catch {
             console.warn('Web Audio API not supported');
         }
     }
@@ -565,7 +572,7 @@ function playSound(type) {
     else if (type === 'click') soundEngine.click();
 }
 
-// ── Confetti System ──
+// â”€â”€ Confetti System â”€â”€
 class ConfettiSystem {
     constructor(canvas) {
         this.canvas = canvas;
@@ -659,19 +666,19 @@ class ConfettiSystem {
 }
 let confetti = null;
 
-// ── Level Configs ──
+// â”€â”€ Level Configs â”€â”€
 // Each level folder has ~20 images. We pick a random one each play.
 function buildLevels() {
     const levels = {};
-    // Levels 1-7: 3×3 (easy)
+    // Levels 1-7: 3Ã—3 (easy)
     for (let i = 1; i <= 7; i++) {
         levels[i] = { rows: 3, cols: 3, folder: `level${i}` };
     }
-    // Levels 8-13: 6×6 (medium)
+    // Levels 8-13: 6Ã—6 (medium)
     for (let i = 8; i <= 13; i++) {
         levels[i] = { rows: 6, cols: 6, folder: `level${i}` };
     }
-    // Levels 14-19: 9×9 (hard)
+    // Levels 14-19: 9Ã—9 (hard)
     for (let i = 14; i <= 19; i++) {
         levels[i] = { rows: 9, cols: 9, folder: `level${i}` };
     }
@@ -707,6 +714,25 @@ function getAvailableBoardArea() {
         return { width: 500, height: 600 };
     }
 
+    if (isMobileSidebarMode()) {
+        const mobileStage = BOARD.closest('.board-stage');
+        if (mobileStage) {
+            const stageRect = mobileStage.getBoundingClientRect();
+            const drawerBar = mobileStage.querySelector('.mobile-drawer-bar');
+            const drawerHeight = drawerBar ? drawerBar.getBoundingClientRect().height : 0;
+            const stageStyles = window.getComputedStyle(mobileStage);
+            const stageGap = parseFloat(stageStyles.rowGap || stageStyles.gap || '0');
+            const boardStyles = window.getComputedStyle(boardWrap);
+            const paddingX = parseFloat(boardStyles.paddingLeft || '0') + parseFloat(boardStyles.paddingRight || '0');
+            const paddingY = parseFloat(boardStyles.paddingTop || '0') + parseFloat(boardStyles.paddingBottom || '0');
+
+            return {
+                width: Math.max(180, boardWrap.clientWidth - paddingX - 24),
+                height: Math.max(180, stageRect.height - drawerHeight - stageGap - paddingY - 24),
+            };
+        }
+    }
+
     const styles = window.getComputedStyle(boardWrap);
     const paddingX = parseFloat(styles.paddingLeft || '0') + parseFloat(styles.paddingRight || '0');
     const paddingY = parseFloat(styles.paddingTop || '0') + parseFloat(styles.paddingBottom || '0');
@@ -716,7 +742,19 @@ function getAvailableBoardArea() {
     return { width, height };
 }
 
-// ── Piece Class ──
+function fitBoardToViewport() {
+    if (!BOARD || !pieces.length) return;
+
+    const availableArea = getAvailableBoardArea();
+    const boardWidth = BOARD.offsetWidth;
+    const boardHeight = BOARD.offsetHeight;
+    if (!boardWidth || !boardHeight) return;
+
+    const scale = Math.min(1, availableArea.width / boardWidth, availableArea.height / boardHeight);
+    BOARD.style.transform = scale < 1 ? `scale(${scale})` : 'scale(1)';
+}
+
+// â”€â”€ Piece Class â”€â”€
 class Piece {
     constructor(id, col, row, width, height, imageUrl, backImageUrl, totalCols, totalRows, imgW, imgH) {
         this.id = id;
@@ -749,7 +787,7 @@ class Piece {
         this.front = document.createElement('div');
         this.front.className = 'piece-front';
         this.front.style.backgroundImage = `url("${imageUrl}")`;
-        // Use natural image dimensions for background-size — no scaling
+        // Use natural image dimensions for background-size â€” no scaling
         this.front.style.backgroundSize = `${imgW}px ${imgH}px`;
         this.front.style.backgroundPosition = `-${this.correctX}px -${this.correctY}px`;
 
@@ -793,14 +831,14 @@ class Piece {
     }
 }
 
-// ── Drag State ──
+// â”€â”€ Drag State â”€â”€
 let draggingGroup = null;
 let dragOffsets = {};
 let startPointer = { x: 0, y: 0 };
 let isMemorizing = false;
 let boardRect = null;
 
-// ── Timer ──
+// â”€â”€ Timer â”€â”€
 function startTimer() {
     stopTimer();
     timerSeconds = 0;
@@ -831,7 +869,7 @@ function updateMoveCount() {
     if (SIDEBAR_MOVES_EL) SIDEBAR_MOVES_EL.textContent = moveCount;
 }
 
-// ── Grid Helpers ──
+// â”€â”€ Grid Helpers â”€â”€
 function buildGrid(rows, cols) {
     grid = [];
     for (let r = 0; r < rows; r++) {
@@ -849,7 +887,7 @@ function getPieceAt(col, row) {
     return pieces.find(p => p.id === pid);
 }
 
-// ── Init Level ──
+// â”€â”€ Init Level â”€â”€
 function initLevel(categoryId, puzzleIndex) {
     WIN_OVERLAY.classList.add('hidden');
     BOARD.innerHTML = '';
@@ -866,7 +904,7 @@ function initLevel(categoryId, puzzleIndex) {
     updateCollectionProgress();
     updateBestScorePanel(categoryId, puzzleIndex);
     updateMergeStatus(1);
-    openSidebarPanel('reference-panel');
+    openSidebarPanel('reference-panel', false);
     
     const puzzleName = getPuzzleName(categoryId, puzzleIndex);
     LEVEL_DISPLAY.innerText = `Level ${categoryId} - ${puzzleName}`;
@@ -922,6 +960,7 @@ function setupBoard(levelNum, config, imageUrl, imgW, imgH) {
     const borderSize = 8;
     BOARD.style.width = `${boardW + borderSize * 2}px`;
     BOARD.style.height = `${boardH + borderSize * 2}px`;
+    BOARD.style.transform = 'scale(1)';
 
     // Set reference image
     if (REF_IMAGE_EL) {
@@ -966,6 +1005,8 @@ function setupBoard(levelNum, config, imageUrl, imgW, imgH) {
         p.inner.classList.add('flipped'); // Show image
     });
 
+    fitBoardToViewport();
+
     // Memorize phase
     isMemorizing = true;
     const memorizeOverlay = document.getElementById('memorize-overlay');
@@ -995,6 +1036,7 @@ function setupBoard(levelNum, config, imageUrl, imgW, imgH) {
             tl.add(() => {
                 pieces.forEach(p => p.inner.classList.add('flipped'));
                 isMemorizing = false;
+                fitBoardToViewport();
                 startTimer();
             }, '+=0.3');
         }, 2000);
@@ -1040,7 +1082,7 @@ function shuffleGrid() {
     }
 }
 
-// ── Pointer Handlers ──
+// â”€â”€ Pointer Handlers â”€â”€
 function handlePointerDown(e) {
     if (isMemorizing) return;
     if (e.button !== 0 && e.type !== 'touchstart') return;
@@ -1102,7 +1144,7 @@ function handlePointerMove(e) {
     });
 }
 
-function handlePointerUp(e) {
+function handlePointerUp() {
     document.removeEventListener('pointermove', handlePointerMove);
     document.removeEventListener('pointerup', handlePointerUp);
     document.removeEventListener('pointercancel', handlePointerUp);
@@ -1219,10 +1261,10 @@ function bounceBack(movedPieces) {
     playSound('drag');
 }
 
-// ── Merge Logic (Grid-Based) ──
+// â”€â”€ Merge Logic (Grid-Based) â”€â”€
 function checkAllMerges() {
     const oldGroupSizes = {};
-    Object.entries(groups).forEach(([groupId, pieceIds]) => {
+    Object.entries(groups).forEach(([, pieceIds]) => {
         pieceIds.forEach((id) => {
             oldGroupSizes[id] = pieceIds.length;
         });
@@ -1351,7 +1393,7 @@ function checkWinCondition() {
     }, 200);
 }
 
-// ── Screen Routing ──
+// â”€â”€ Screen Routing â”€â”€
 const MAIN_MENU = document.getElementById('main-menu');
 const GAME_HEADER = document.getElementById('game-header');
 const LEVEL_SELECT = document.getElementById('level-select-screen');
@@ -1424,11 +1466,11 @@ function showGame() {
     if (GAME_AREA) GAME_AREA.classList.remove('hidden');
     updateModeLabels();
     updateCoinDisplays();
-    openSidebarPanel('reference-panel');
+    openSidebarPanel('reference-panel', false);
     setTimeout(syncSidebarBehavior, 60);
 }
 
-// ── Level Grids ──
+// â”€â”€ Level Grids â”€â”€
 function generateCategoryGrid() {
     CATEGORY_GRID.innerHTML = '';
     const totalLevels = Object.keys(LEVELS).length;
@@ -1438,7 +1480,7 @@ function generateCategoryGrid() {
         btn.className = 'wood-btn level-btn';
 
         const config = LEVELS[i];
-        const sizeLabel = `${config.rows}×${config.cols}`;
+        const sizeLabel = `${config.rows}Ã—${config.cols}`;
         
         // Check puzzle count
         const images = window.LEVEL_IMAGES ? window.LEVEL_IMAGES[i] : null;
@@ -1481,7 +1523,7 @@ function showPuzzleSelect(categoryId) {
     generatePuzzleGrid(categoryId);
 }
 
-// ── UI Wiring ──
+// â”€â”€ UI Wiring â”€â”€
 
 // Sound & Volume Toggles
 const soundToggleMenu = document.getElementById('sound-toggle-menu');
@@ -1565,9 +1607,9 @@ SIDEBAR_TABS.forEach((tab) => {
     });
 });
 
-function openSidebarPanel(panelId) {
+function openSidebarPanel(panelId, forceExpand = true) {
     if (!GAME_SIDEBAR_EL) return;
-    expandSidebar(true);
+    if (forceExpand) expandSidebar(true);
     SIDEBAR_TABS.forEach((tab) => {
         tab.classList.toggle('active', tab.getAttribute('data-sidebar-panel') === panelId);
     });
@@ -1578,6 +1620,39 @@ function openSidebarPanel(panelId) {
 
 function isSidebarAutoMode() {
     return !!(window.matchMedia && window.matchMedia('(hover: hover)').matches);
+}
+
+function isMobileSidebarMode() {
+    return !!(window.matchMedia && window.matchMedia('(max-width: 780px)').matches);
+}
+
+function syncMobileBackdrop() {
+    if (!MOBILE_PANEL_BACKDROP_EL || !GAME_AREA) return;
+    const isOpen = GAME_AREA.classList.contains('mobile-sidebar-open') || GAME_AREA.classList.contains('mobile-perks-open');
+    MOBILE_PANEL_BACKDROP_EL.classList.toggle('hidden', !isOpen);
+}
+
+function syncMobileDrawerTriggers() {
+    if (!GAME_AREA) return;
+    const sidebarOpen = GAME_AREA.classList.contains('mobile-sidebar-open');
+    const perksOpen = GAME_AREA.classList.contains('mobile-perks-open');
+
+    if (MOBILE_SIDEBAR_TRIGGER_EL) {
+        MOBILE_SIDEBAR_TRIGGER_EL.classList.toggle('is-active', sidebarOpen);
+        MOBILE_SIDEBAR_TRIGGER_EL.setAttribute('aria-expanded', sidebarOpen ? 'true' : 'false');
+    }
+
+    if (MOBILE_PERKS_TRIGGER_EL) {
+        MOBILE_PERKS_TRIGGER_EL.classList.toggle('is-active', perksOpen);
+        MOBILE_PERKS_TRIGGER_EL.setAttribute('aria-expanded', perksOpen ? 'true' : 'false');
+    }
+}
+
+function closeMobilePanels() {
+    if (!GAME_AREA) return;
+    GAME_AREA.classList.remove('mobile-sidebar-open', 'mobile-perks-open');
+    syncMobileBackdrop();
+    syncMobileDrawerTriggers();
 }
 
 function updateSidebarWidthCache() {
@@ -1610,6 +1685,16 @@ function expandSidebar(immediate = false) {
     GAME_SIDEBAR_EL.classList.remove('collapsed');
     GAME_AREA.classList.remove('sidebar-hidden');
 
+    if (isMobileSidebarMode()) {
+        GAME_AREA.classList.add('mobile-sidebar-open');
+        GAME_AREA.classList.remove('mobile-perks-open');
+        gsap.killTweensOf(GAME_SIDEBAR_EL);
+        gsap.set(GAME_SIDEBAR_EL, { clearProps: 'x,opacity,pointerEvents' });
+        syncMobileBackdrop();
+        syncMobileDrawerTriggers();
+        return;
+    }
+
     if (!isSidebarAutoMode()) {
         gsap.set(GAME_SIDEBAR_EL, { clearProps: 'x,opacity,pointerEvents' });
         gsap.set(GAME_AREA, { '--right-sidebar-width': `${sidebarExpandedWidth}px` });
@@ -1633,7 +1718,14 @@ function expandSidebar(immediate = false) {
 }
 
 function collapseSidebar(immediate = false) {
-    if (!GAME_SIDEBAR_EL || !GAME_AREA || !isSidebarAutoMode() || sidebarPinnedOpen) return;
+    if (!GAME_SIDEBAR_EL || !GAME_AREA) return;
+    if (isMobileSidebarMode()) {
+        GAME_AREA.classList.remove('mobile-sidebar-open');
+        syncMobileBackdrop();
+        syncMobileDrawerTriggers();
+        return;
+    }
+    if (!isSidebarAutoMode() || sidebarPinnedOpen) return;
     clearSidebarHideTimer();
     updateSidebarWidthCache();
     GAME_SIDEBAR_EL.classList.add('collapsed');
@@ -1664,6 +1756,17 @@ function expandPerksSidebar(immediate = false) {
     clearPerksSidebarHideTimer();
     PERKS_SIDEBAR_EL.classList.remove('collapsed');
     GAME_AREA.classList.remove('perks-sidebar-hidden');
+
+    if (isMobileSidebarMode()) {
+        GAME_AREA.classList.add('mobile-perks-open');
+        GAME_AREA.classList.remove('mobile-sidebar-open');
+        gsap.killTweensOf(PERKS_SIDEBAR_EL);
+        gsap.set(PERKS_SIDEBAR_EL, { clearProps: 'x,opacity,pointerEvents' });
+        syncMobileBackdrop();
+        syncMobileDrawerTriggers();
+        return;
+    }
+
     const width = updatePerksSidebarWidthCache();
     gsap.killTweensOf([PERKS_SIDEBAR_EL, GAME_AREA]);
     gsap.to(GAME_AREA, {
@@ -1681,7 +1784,14 @@ function expandPerksSidebar(immediate = false) {
 }
 
 function collapsePerksSidebar(immediate = false) {
-    if (!PERKS_SIDEBAR_EL || !GAME_AREA || !isSidebarAutoMode() || perksSidebarPinnedOpen) return;
+    if (!PERKS_SIDEBAR_EL || !GAME_AREA) return;
+    if (isMobileSidebarMode()) {
+        GAME_AREA.classList.remove('mobile-perks-open');
+        syncMobileBackdrop();
+        syncMobileDrawerTriggers();
+        return;
+    }
+    if (!isSidebarAutoMode() || perksSidebarPinnedOpen) return;
     clearPerksSidebarHideTimer();
     const width = updatePerksSidebarWidthCache();
     PERKS_SIDEBAR_EL.classList.add('collapsed');
@@ -1710,6 +1820,17 @@ function schedulePerksSidebarCollapse() {
 function syncSidebarBehavior() {
     if (!GAME_SIDEBAR_EL || !GAME_AREA) return;
     clearSidebarHideTimer();
+
+    if (isMobileSidebarMode()) {
+        GAME_SIDEBAR_EL.classList.remove('collapsed');
+        GAME_AREA.classList.add('sidebar-hidden', 'perks-sidebar-hidden');
+        gsap.killTweensOf([GAME_SIDEBAR_EL, PERKS_SIDEBAR_EL, GAME_AREA]);
+        gsap.set(GAME_SIDEBAR_EL, { clearProps: 'x,opacity,pointerEvents' });
+        if (PERKS_SIDEBAR_EL) gsap.set(PERKS_SIDEBAR_EL, { clearProps: 'x,opacity,pointerEvents' });
+        gsap.set(GAME_AREA, { '--left-sidebar-width': '0px', '--right-sidebar-width': '0px' });
+        closeMobilePanels();
+        return;
+    }
 
     if (isSidebarAutoMode()) {
         updateSidebarWidthCache();
@@ -1741,11 +1862,17 @@ function syncSidebarBehavior() {
             gsap.set(PERKS_SIDEBAR_EL, { clearProps: 'x,opacity,pointerEvents' });
         }
     }
+
+    syncMobileDrawerTriggers();
 }
 
 if (SIDEBAR_TOGGLE_EL && GAME_SIDEBAR_EL) {
     SIDEBAR_TOGGLE_EL.addEventListener('click', () => {
         playSound('click');
+        if (isMobileSidebarMode()) {
+            collapseSidebar(true);
+            return;
+        }
         sidebarPinnedOpen = !sidebarPinnedOpen;
         if (sidebarPinnedOpen) {
             const activeTab = document.querySelector('.sidebar-tab.active');
@@ -1757,6 +1884,10 @@ if (SIDEBAR_TOGGLE_EL && GAME_SIDEBAR_EL) {
 if (PERKS_SIDEBAR_TOGGLE_EL && PERKS_SIDEBAR_EL) {
     PERKS_SIDEBAR_TOGGLE_EL.addEventListener('click', () => {
         playSound('click');
+        if (isMobileSidebarMode()) {
+            collapsePerksSidebar(true);
+            return;
+        }
         perksSidebarPinnedOpen = !perksSidebarPinnedOpen;
         if (perksSidebarPinnedOpen) expandPerksSidebar(true);
         else if (isSidebarAutoMode()) collapsePerksSidebar();
@@ -1783,7 +1914,66 @@ if (SIDEBAR_HOVER_ZONE_EL) {
     SIDEBAR_HOVER_ZONE_EL.addEventListener('mouseleave', scheduleSidebarCollapse);
 }
 
-window.addEventListener('resize', syncSidebarBehavior);
+if (PERKS_EDGE_HINT_EL) {
+    PERKS_EDGE_HINT_EL.addEventListener('click', () => {
+        playSound('click');
+        if (GAME_AREA && GAME_AREA.classList.contains('mobile-perks-open')) collapsePerksSidebar(true);
+        else expandPerksSidebar(true);
+    });
+}
+
+if (SIDEBAR_EDGE_HINT_EL) {
+    SIDEBAR_EDGE_HINT_EL.addEventListener('click', () => {
+        playSound('click');
+        if (GAME_AREA && GAME_AREA.classList.contains('mobile-sidebar-open')) collapseSidebar(true);
+        else {
+            const activeTab = document.querySelector('.sidebar-tab.active');
+            openSidebarPanel(activeTab ? activeTab.getAttribute('data-sidebar-panel') : 'reference-panel');
+        }
+    });
+}
+
+if (MOBILE_PANEL_BACKDROP_EL) {
+    MOBILE_PANEL_BACKDROP_EL.addEventListener('click', () => {
+        closeMobilePanels();
+    });
+}
+
+if (MOBILE_PERKS_TRIGGER_EL) {
+    MOBILE_PERKS_TRIGGER_EL.addEventListener('click', () => {
+        playSound('click');
+        if (GAME_AREA && GAME_AREA.classList.contains('mobile-perks-open')) collapsePerksSidebar(true);
+        else expandPerksSidebar(true);
+    });
+}
+
+if (MOBILE_SIDEBAR_TRIGGER_EL) {
+    MOBILE_SIDEBAR_TRIGGER_EL.addEventListener('click', () => {
+        playSound('click');
+        if (GAME_AREA && GAME_AREA.classList.contains('mobile-sidebar-open')) collapseSidebar(true);
+        else {
+            const activeTab = document.querySelector('.sidebar-tab.active');
+            openSidebarPanel(activeTab ? activeTab.getAttribute('data-sidebar-panel') : 'reference-panel');
+        }
+    });
+}
+
+let boardFitTimer = null;
+
+function handleViewportResize() {
+    syncAppViewportHeight();
+    syncSidebarBehavior();
+    clearTimeout(boardFitTimer);
+    boardFitTimer = setTimeout(() => {
+        fitBoardToViewport();
+    }, 120);
+}
+
+window.addEventListener('resize', handleViewportResize);
+window.addEventListener('orientationchange', handleViewportResize);
+if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', handleViewportResize);
+}
 
 const pauseBtn = document.getElementById('pause-btn');
 if (pauseBtn) {
@@ -1856,7 +2046,7 @@ function generatePuzzleGrid(categoryId) {
 
             const puzzleName = getPuzzleName(categoryId, i);
             const best = getBestScore(categoryId, i);
-            const starText = best ? `${'★'.repeat(best.stars)}${'☆'.repeat(3 - best.stars)}` : 'New';
+            const starText = best ? `${'â˜…'.repeat(best.stars)}${'â˜†'.repeat(3 - best.stars)}` : 'New';
             const imgUrl = `/levels/${config.folder}/${encodeURIComponent(images[i])}`;
             const isLastPlayed = isLastPlayedCategory && lastPlayedPuzzle === i;
 
@@ -1881,7 +2071,7 @@ function generatePuzzleGrid(categoryId) {
     }
 }
 
-// ── Menu Button Handlers ──
+// â”€â”€ Menu Button Handlers â”€â”€
 const START_BTN = document.getElementById('start-btn');
 START_BTN.addEventListener('click', () => {
     playSound('click');
@@ -1931,8 +2121,6 @@ if (zenToggleSettingsBtn) {
 
 // Modals
 const SETTINGS_MODAL = document.getElementById('settings-overlay');
-const SHOP_MODAL = document.getElementById('shop-overlay');
-
 const settingsBtn = document.getElementById('settings-btn');
 if (settingsBtn) {
     settingsBtn.addEventListener('click', () => SETTINGS_MODAL.classList.remove('hidden'));
@@ -1949,7 +2137,7 @@ toggleSoundBtn.addEventListener('click', () => {
     if (!isMuted) playSound('snap');
 });
 
-// ── Initialize ──
+// â”€â”€ Initialize â”€â”€
 applyTheme(playerProgress.activeTheme || 'cozy-hearth');
 updateCoinDisplays();
 updateModeLabels();

@@ -49,6 +49,12 @@
     --radius-pill: 999px;
     --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     --grid-gap: 0px;
+    --app-height: 100%;
+}
+
+html {
+    width: 100%;
+    height: 100%;
 }
 
 * {
@@ -68,8 +74,9 @@ body {
         linear-gradient(180deg, #3b251b 0%, #241710 100%);
     color: var(--text-main);
     overflow: hidden;
-    width: 100vw;
-    height: 100vh;
+    width: 100%;
+    height: var(--app-height);
+    min-height: var(--app-height);
 }
 
 body::before {
@@ -87,6 +94,7 @@ body::before {
 #game-container {
     width: 100%;
     height: 100%;
+    min-height: 100%;
     display: flex;
     flex-direction: column;
     position: relative;
@@ -751,6 +759,13 @@ body::before {
     position: relative;
 }
 
+.board-stage {
+    min-width: 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
 .perks-sidebar {
     display: flex;
     flex-direction: column;
@@ -859,6 +874,10 @@ body::before {
     overflow: hidden;
 }
 
+.mobile-drawer-bar {
+    display: none;
+}
+
 .board-vignette {
     position: absolute;
     inset: 0;
@@ -887,6 +906,7 @@ body::before {
     box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.25), var(--shadow-lg);
     flex-shrink: 0;
     z-index: 10;
+    transform-origin: center center;
 }
 
 /* ── Sidebar ── */
@@ -990,6 +1010,8 @@ body::before {
     opacity: 0;
     transition: opacity 0.2s ease, transform 0.2s ease;
     z-index: 2;
+    appearance: none;
+    cursor: pointer;
 }
 
 #sidebar-hover-zone {
@@ -1018,6 +1040,27 @@ body::before {
     opacity: 0;
     transition: opacity 0.2s ease, transform 0.2s ease;
     z-index: 2;
+    appearance: none;
+    cursor: pointer;
+}
+
+.mobile-panel-backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    border: none;
+    background: rgba(17, 10, 6, 0.52);
+    backdrop-filter: blur(3px);
+    cursor: pointer;
+}
+
+.mobile-drawer-trigger {
+    width: 100%;
+}
+
+.mobile-drawer-trigger.is-active {
+    box-shadow: 0 0 0 2px var(--theme-accent) inset, 0 4px 12px rgba(0, 0, 0, 0.4);
+    pointer-events: none;
 }
 
 .edge-hint-dot {
@@ -1503,11 +1546,13 @@ body::before {
    TUTORIAL
    ═══════════════════════════════════════════ */
 #tutorial-hand {
+    --tutorial-offset-x: -15%;
+    --tutorial-offset-y: -15%;
     position: absolute;
     width: 80px;
     z-index: 20000;
     pointer-events: none;
-    transform: translate(-15%, -15%); /* Finger tip alignment */
+    transform: translate(var(--tutorial-offset-x), var(--tutorial-offset-y)); /* Finger tip alignment */
     filter: drop-shadow(0 10px 20px rgba(0,0,0,0.6));
     transition: opacity 0.3s;
     transform-origin: 15% 15%;
@@ -1522,7 +1567,7 @@ body::before {
     position: absolute;
     bottom: 100%;
     left: 40px;
-    background: #FFD700; /* Gold */
+    background: #FFD700;
     color: #000;
     padding: 10px 20px;
     border-radius: 15px;
@@ -1557,12 +1602,12 @@ body::before {
 }
 
 @keyframes hand-drag {
-    0% { transform: translate(-15%, -15%) scale(1); }
-    15% { transform: translate(-15%, -15%) scale(0.8); }
-    30% { transform: translate(-15%, -15%) scale(0.8); }
-    70% { transform: translate(calc(-15% + var(--tx, 0px)), calc(-15% + var(--ty, 0px))) scale(0.8); }
-    85% { transform: translate(calc(-15% + var(--tx, 0px)), calc(-15% + var(--ty, 0px))) scale(1); }
-    100% { transform: translate(calc(-15% + var(--tx, 0px)), calc(-15% + var(--ty, 0px))) scale(1); }
+    0% { transform: translate(var(--tutorial-offset-x), var(--tutorial-offset-y)) scale(1); }
+    15% { transform: translate(var(--tutorial-offset-x), var(--tutorial-offset-y)) scale(0.8); }
+    30% { transform: translate(var(--tutorial-offset-x), var(--tutorial-offset-y)) scale(0.8); }
+    70% { transform: translate(calc(var(--tutorial-offset-x) + var(--tx, 0px)), calc(var(--tutorial-offset-y) + var(--ty, 0px))) scale(0.8); }
+    85% { transform: translate(calc(var(--tutorial-offset-x) + var(--tx, 0px)), calc(var(--tutorial-offset-y) + var(--ty, 0px))) scale(1); }
+    100% { transform: translate(calc(var(--tutorial-offset-x) + var(--tx, 0px)), calc(var(--tutorial-offset-y) + var(--ty, 0px))) scale(1); }
 }
 
 
@@ -1932,21 +1977,179 @@ body::before {
 }
 
 @media (max-width: 780px) {
-    #perks-hover-zone,
-    #perks-edge-hint,
-    #sidebar-hover-zone,
-    #sidebar-edge-hint {
-        display: none;
+    body {
+        overflow: hidden;
+        height: var(--app-height);
+        min-height: var(--app-height);
+    }
+
+    #game-container {
+        min-height: 100%;
+        height: 100%;
+    }
+
+    #game-header {
+        height: auto;
+        padding: 10px 12px 4px;
+        flex-wrap: wrap;
+        gap: 6px;
+        align-items: stretch;
+    }
+
+    .header-left,
+    .header-center,
+    .header-right {
+        flex: 1 1 100%;
+        justify-content: space-between;
+        min-width: 0;
+    }
+
+    .header-center {
+        order: 3;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .header-right {
+        order: 2;
+    }
+
+    .game-level-title {
+        min-width: 0;
+        font-size: 14px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    #game-area {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        padding: 4px 8px calc(4px + env(safe-area-inset-bottom, 0px));
+        overflow: hidden;
+        gap: 6px;
+    }
+
+    .board-stage {
+        width: 100%;
+        flex: 1 1 auto;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
     }
 
     .board-wrap {
+        order: 1;
+        flex: 1 1 auto;
+        width: min(70vw, calc(100vw - 24px), 520px);
+        max-width: 100%;
         min-height: 0;
+        max-height: none;
+        align-self: center;
         padding: 14px;
+        margin: 0;
+        border-radius: 22px;
+        box-shadow: 0 18px 42px rgba(0, 0, 0, 0.34);
+    }
+
+    .perks-sidebar,
+    #game-sidebar {
+        position: absolute;
+        left: 12px;
+        right: 12px;
+        top: auto;
+        bottom: calc(50px + env(safe-area-inset-bottom, 0px));
+        width: auto;
+        min-width: 0;
+        max-height: min(56dvh, 460px);
+        border-radius: 24px 24px 18px 18px;
+        overflow: hidden auto;
+        z-index: 2000;
+        opacity: 0;
+        pointer-events: none;
+        transition: transform 0.24s ease, opacity 0.24s ease;
+        box-shadow: 0 -16px 40px rgba(0, 0, 0, 0.4);
+    }
+
+    .perks-sidebar {
+        transform: translateY(calc(100% + 24px));
+    }
+
+    #game-sidebar {
+        transform: translateY(calc(100% + 24px));
+    }
+
+    #game-area.mobile-perks-open .perks-sidebar {
+        transform: translateY(0);
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    #game-area.mobile-sidebar-open #game-sidebar {
+        transform: translateY(0);
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .mobile-drawer-bar {
+        order: 2;
+        width: min(100%, 520px);
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 6px;
+        padding-bottom: 0px;
+        z-index: 1000;
+        margin-top: auto;
+    }
+
+    .sidebar-topbar,
+    .left-sidebar-topbar {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        padding: 14px 14px 0;
+        background: linear-gradient(180deg, rgba(59, 38, 28, 0.98), rgba(59, 38, 28, 0.85) 80%, transparent 100%);
+    }
+
+    .sidebar-tabs {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        padding: 10px 14px 0;
+    }
+
+    #tutorial-hand {
+        width: 72px;
+        --tutorial-offset-x: -12%;
+        --tutorial-offset-y: -12%;
+    }
+
+    #tutorial-bubble {
+        left: 30px;
+        max-width: min(220px, calc(100vw - 40px));
+        white-space: normal;
+        font-size: 15px;
+        padding: 10px 14px;
+    }
+
+    #perks-hover-zone,
+    #sidebar-hover-zone {
+        display: none;
+    }
+
+    #perks-edge-hint,
+    #sidebar-edge-hint {
+        display: none;
     }
 
     .sidebar-section {
         min-width: 0;
         flex: initial;
+        padding: 12px 14px 16px;
     }
 
     .sidebar-summary-grid {
@@ -1955,7 +2158,7 @@ body::before {
 
     .reference-card {
         display: grid;
-        grid-template-columns: minmax(0, 1fr) minmax(120px, 0.9fr);
+        grid-template-columns: minmax(0, 1fr) minmax(140px, 0.8fr);
         align-items: start;
     }
 
@@ -1982,9 +2185,90 @@ body::before {
     .puzzle-group-cover-thumb {
         width: 64px;
     }
+
+    .mobile-panel-backdrop {
+        z-index: 6;
+    }
 }
 
 @media (max-width: 560px) {
+    #game-header {
+        padding: 8px 10px 4px;
+    }
+
+    .header-left,
+    .header-right {
+        gap: 6px;
+    }
+
+    .header-center {
+        gap: 6px;
+    }
+
+    .gstat-pill {
+        font-size: 11px;
+        padding: 4px 8px;
+    }
+
+    .board-wrap {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: min(85vw, calc(100vw - 16px));
+        flex: 1 1 auto;
+        min-height: 0;
+        max-height: none;
+        padding: 6px 8px;
+        border-radius: 16px;
+        margin-bottom: 0;
+    }
+
+    .mobile-drawer-bar {
+        width: 100%;
+        gap: 8px;
+    }
+
+    .mobile-drawer-trigger {
+        padding: 8px 10px;
+        min-height: 38px;
+        font-size: 14px;
+        border-radius: 10px;
+        width: 100%;
+    }
+
+    #board {
+        border-width: 6px;
+        border-radius: 14px;
+    }
+
+    .perks-sidebar,
+    #game-sidebar {
+        left: 10px;
+        right: 10px;
+        bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+        max-height: min(60dvh, 430px);
+        border-radius: 22px 22px 16px 16px;
+    }
+
+    #tutorial-hand {
+        width: 64px;
+        --tutorial-offset-x: -8%;
+        --tutorial-offset-y: -9%;
+    }
+
+    #tutorial-bubble {
+        left: 22px;
+        max-width: min(190px, calc(100vw - 28px));
+        font-size: 14px;
+        line-height: 1.3;
+        padding: 9px 12px;
+        border-width: 3px;
+    }
+
+    #tutorial-bubble::after {
+        left: 13px;
+    }
+
     .menu-shell {
         width: calc(100% - 20px);
         padding: 14px;
@@ -1997,6 +2281,14 @@ body::before {
     .wood-btn.large {
         width: 100%;
         max-width: none;
+    }
+
+    .sidebar-tabs {
+        gap: 5px;
+    }
+
+    .sidebar-tab {
+        padding: 8px 2px;
     }
 
     .level-grid {
@@ -2029,9 +2321,7 @@ body::before {
     }
 
     #perks-hover-zone,
-    #perks-edge-hint,
-    #sidebar-hover-zone,
-    #sidebar-edge-hint {
+    #sidebar-hover-zone {
         display: none;
     }
 
@@ -2046,6 +2336,10 @@ body::before {
     .sidebar-summary-grid,
     .reference-card {
         grid-template-columns: 1fr;
+    }
+
+    .reference-card {
+        gap: 10px;
     }
 
     .live-run-grid {

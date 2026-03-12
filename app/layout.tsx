@@ -114,7 +114,7 @@ export default function RootLayout({
       </head>
       <body className={`${inter.variable} ${outfit.variable}`}>
         <Header />
-        <main>{children}</main>
+        <main className="site-main">{children}</main>
         <Footer />
       </body>
     </html>

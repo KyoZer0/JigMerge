@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import AdSlot from './components/AdSlot';
+import GameEmbedActions from './components/GameEmbedActions';
 import HeroSection from './components/HeroSection';
 
 export const metadata: Metadata = {
@@ -15,35 +16,16 @@ export const metadata: Metadata = {
 export default function Home() {
   return (
     <>
-      {/* ── Play Now Embedded Game ── */}
-      <section style={{
-        width: '100%',
-        backgroundColor: 'var(--bg)',
-        paddingTop: '8.5rem',
-        paddingBottom: '2rem',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderBottom: '1px solid var(--border-light)'
-      }}>
-        <div style={{
-          width: '100%',
-          maxWidth: '1120px',
-          aspectRatio: '16 / 10',
-          minHeight: '620px',
-          maxHeight: '78vh',
-          margin: '0 auto',
-          position: 'relative',
-          borderRadius: '22px',
-          overflow: 'hidden',
-          boxShadow: 'var(--shadow-lg)',
-          border: '1px solid var(--border-light)'
-        }}>
-          <iframe
-            src="/game/index.html"
-            title="Play JigMerge Free Online"
-            style={{ width: '100%', height: '100%', border: 'none' }}
-          />
+      <section className="home-embed-section">
+        <div className="home-embed-shell">
+          <div id="home-game-frame" className="home-embed-card">
+            <iframe
+              src="/game/index.html"
+              title="Play JigMerge Free Online"
+              style={{ width: '100%', height: '100%', border: 'none' }}
+            />
+          </div>
+          <GameEmbedActions targetId="home-game-frame" shareUrl="/play" />
         </div>
       </section>
 
@@ -56,19 +38,14 @@ export default function Home() {
         borderTop: '1px solid var(--border-light)',
         borderBottom: '1px solid var(--border-light)',
       }}>
-        <div className="container" style={{
-          display: 'flex',
-          justifyContent: 'center',
-          gap: '3rem',
-          flexWrap: 'wrap',
-        }}>
+        <div className="container home-stats-grid">
           {[
             { value: '25+', label: 'Handcrafted Levels' },
             { value: '5', label: 'Image Categories' },
             { value: '0', label: 'Downloads Needed' },
             { value: '100%', label: 'Free Forever' },
           ].map((stat) => (
-            <div key={stat.label} style={{ textAlign: 'center' }}>
+            <div key={stat.label} className="home-stat-card">
               <div style={{
                 fontFamily: 'var(--font-display)',
                 fontSize: '1.5rem',
@@ -164,13 +141,7 @@ export default function Home() {
             a unique visual journey across five progressively harder levels.
           </p>
 
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(5, 1fr)',
-            gap: '1rem',
-            maxWidth: '700px',
-            margin: '0 auto',
-          }}>
+          <div className="home-categories-grid">
             {[
               { name: 'Animals', icon: 'A' },
               { name: 'Nature', icon: 'N' },
@@ -178,29 +149,8 @@ export default function Home() {
               { name: 'Art', icon: 'R' },
               { name: 'Food', icon: 'F' },
             ].map((cat) => (
-              <div key={cat.name} style={{
-                textAlign: 'center',
-                padding: '1.75rem 0.75rem',
-                background: 'var(--bg-card)',
-                borderRadius: 'var(--radius-lg)',
-                border: '1px solid var(--border-light)',
-                transition: 'all var(--transition)',
-                cursor: 'default',
-              }}>
-                <div style={{
-                  width: '44px',
-                  height: '44px',
-                  borderRadius: '12px',
-                  background: 'var(--accent-soft)',
-                  color: 'var(--accent)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  margin: '0 auto 0.75rem',
-                  fontWeight: 700,
-                  fontSize: '1.1rem',
-                  fontFamily: 'var(--font-display)',
-                }}>
+              <div key={cat.name} className="home-category-card">
+                <div className="home-category-icon">
                   {cat.icon}
                 </div>
                 <span style={{
@@ -227,23 +177,14 @@ export default function Home() {
             is crafted to feel smooth, satisfying, and never frustrating.
           </p>
 
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
-            gap: '1.25rem',
-          }}>
+          <div className="home-feel-grid">
             {[
               { title: 'Smooth animations', desc: 'Tiles glide into place with buttery 60fps physics. No jank, no stutter.' },
               { title: 'Satisfying feedback', desc: 'Correct placements snap with visual feedback that makes every move feel rewarding.' },
               { title: 'Clean interface', desc: 'No clutter, no distractions. Just you, the puzzle, and a minimal, focused UI.' },
               { title: 'Brain-friendly pacing', desc: 'Progressive difficulty that challenges without overwhelming. Play at your own pace.' },
             ].map((item) => (
-              <div key={item.title} style={{
-                padding: '1.75rem',
-                background: 'var(--bg-card)',
-                borderRadius: 'var(--radius-lg)',
-                border: '1px solid var(--border-light)',
-              }}>
+              <div key={item.title} className="home-feel-card">
                 <h3 style={{ fontSize: '0.95rem', marginBottom: '0.4rem' }}>{item.title}</h3>
                 <p style={{
                   fontSize: '0.85rem',

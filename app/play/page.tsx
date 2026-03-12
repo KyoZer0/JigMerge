@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import AdSlot from '../components/AdSlot';
+import GameEmbedActions from '../components/GameEmbedActions';
 
 export const metadata: Metadata = {
     title: 'Play JigMerge – Free Online Puzzle Game',
@@ -12,22 +13,25 @@ export default function PlayPage() {
         <>
             {/* Game Section — full viewport */}
             <div className="play-layout">
-                {/* Left side — Single vertical ad */}
                 <aside className="play-sidebar">
                     <div className="ad-vertical">
                         <div className="ad-slot ad-slot-vertical">Ad</div>
                     </div>
                 </aside>
 
-                {/* Right side — Game iframe */}
                 <main className="play-main">
-                    <iframe
-                        src="/game/index.html"
-                        title="JigMerge Game"
-                        className="play-iframe"
-                        allow="autoplay"
-                        loading="lazy"
-                    />
+                    <div className="play-frame-shell">
+                        <div id="play-game-frame" className="play-frame-card">
+                            <iframe
+                                src="/game/index.html"
+                                title="JigMerge Game"
+                                className="play-iframe"
+                                allow="autoplay"
+                                loading="lazy"
+                            />
+                        </div>
+                        <GameEmbedActions targetId="play-game-frame" shareUrl="/play" />
+                    </div>
                 </main>
             </div>
 

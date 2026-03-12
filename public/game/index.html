@@ -197,7 +197,6 @@
                 </span>
             </div>
             <div class="header-right game-toolbar-right">
-                <span class="gstat-pill wood-panel-small merge-pill" id="merge-status">Warm-up</span>
                 <span class="coin-inline toolbar-coins wood-panel-small">
                     <span class="coin-icon">
                         <svg class="icon-svg star-icon" viewBox="0 0 24 24" fill="var(--yellow-star)"
@@ -224,10 +223,11 @@
         <!-- Game Area (Board + Sidebar) -->
         <div id="game-area" class="hidden">
             <div id="perks-hover-zone" aria-hidden="true"></div>
-            <div id="perks-edge-hint" aria-hidden="true">
+            <button id="perks-edge-hint" type="button" aria-label="Open loadout panel">
                 <span class="edge-hint-text">Perks</span>
                 <span class="edge-hint-dot"></span>
-            </div>
+            </button>
+            <button id="mobile-panel-backdrop" class="mobile-panel-backdrop hidden" type="button" aria-label="Close mobile panel"></button>
 
             <aside id="perks-sidebar" class="perks-sidebar">
                 <div class="sidebar-topbar left-sidebar-topbar">
@@ -272,15 +272,25 @@
             </aside>
 
             <!-- Main Board -->
-            <div class="board-wrap">
-                <div class="board-vignette"></div>
-                <main id="board">
-                    <!-- Puzzle pieces will be injected here -->
-                </main>
-                <div id="merge-feedback" class="merge-feedback hidden">Nice merge</div>
-                <div id="tutorial-hand" class="hidden">
-                    <img src="Assets/jigmerge_hand_tutorial.png" alt="Tutorial Hand">
-                    <div id="tutorial-bubble" class="hidden">Welcome to JigMerge!</div>
+            <div class="board-stage">
+                <div class="board-wrap">
+                    <div class="board-vignette"></div>
+                    <main id="board">
+                        <!-- Puzzle pieces will be injected here -->
+                    </main>
+                    <div id="merge-feedback" class="merge-feedback hidden">Nice merge</div>
+                    <div id="tutorial-hand" class="hidden">
+                        <img src="Assets/jigmerge_hand_tutorial.png" alt="Tutorial Hand">
+                        <div id="tutorial-bubble" class="hidden">Welcome to JigMerge!</div>
+                    </div>
+                </div>
+                <div class="mobile-drawer-bar" aria-label="Mobile game panels">
+                    <button id="mobile-perks-trigger" class="mobile-drawer-trigger wood-btn" type="button" aria-controls="perks-sidebar" aria-expanded="false">
+                        🪄 Loadout
+                    </button>
+                    <button id="mobile-sidebar-trigger" class="mobile-drawer-trigger wood-btn" type="button" aria-controls="game-sidebar" aria-expanded="false">
+                        🎒 Tools
+                    </button>
                 </div>
             </div>
 
@@ -417,10 +427,10 @@
                 </div>
             </aside>
             <div id="sidebar-hover-zone" aria-hidden="true"></div>
-            <div id="sidebar-edge-hint" aria-hidden="true">
+            <button id="sidebar-edge-hint" type="button" aria-label="Open tools panel">
                 <span class="edge-hint-dot"></span>
                 <span class="edge-hint-text">Tools</span>
-            </div>
+            </button>
         </div>
 
         <!-- Memorize Overlay -->

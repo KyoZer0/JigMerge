@@ -23,7 +23,7 @@
       try {
         this.ctx = new (window.AudioContext || window.webkitAudioContext)();
         this.initialized = true;
-      } catch (e) {
+      } catch {
         console.warn('Web Audio API not supported');
       }
     }
@@ -593,7 +593,7 @@
   // ==========================================
   // IMAGE LOADING
   // ==========================================
-  function picUrl(cat, img, w, h) {
+  function picUrl(cat, img) {
     // Local images: /levels/Category/filename.jpg
     const catFolder = cat.name; // e.g. "Animals"
     return `/levels/${catFolder}/${img}`;
@@ -1053,8 +1053,6 @@
     }
 
     const newGridSet = new Set(moves_map.map(m => m.newGridIdx));
-    const oldGridSet = new Set(moves_map.map(m => m.oldGridIdx));
-
     const displaced = [];
     for (const m of moves_map) {
       const occ = tiles.findIndex(t => t.currentIndex === m.newGridIdx);

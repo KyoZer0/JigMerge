@@ -12,20 +12,24 @@ const TUTORIAL_MOVES = [
     { 
         pieceId: 1, 
         to: { c: 0, r: 0 },
-        text: "Swipe this piece to the left!"
+        text: "Drag this tile left to swap it into place."
     },
     { 
         pieceId: 4, 
         to: { c: 0, r: 1 },
-        text: "Now merge this one below it!"
+        text: "Nice. Correct neighbors merge into one group."
     },
     {
-        pieceId: 1, 
-        to: { c: 1, r: 0 },
-        isGroupMove: true,
-        text: "Great! Now move the whole group!"
+        pieceId: 7,
+        to: { c: 0, r: 2 },
+        text: "One last swap. Finish the picture!"
     }
 ];
+
+function isTutorialSolved() {
+    const remainingGroups = Object.keys(groups);
+    return remainingGroups.length === 1 && groups[remainingGroups[0]].length === pieces.length;
+}
 
 function initTutorial() {
     console.log("Tutorial: Initializing...");
@@ -145,11 +149,12 @@ function finishTutorial() {
     hideHand();
     isTutorialActive = false;
     localStorage.setItem('jigmerge_tutorial_done', 'true');
-    const remainingGroups = Object.keys(groups);
-    if (remainingGroups.length === 1 && groups[remainingGroups[0]].length === pieces.length) {
+    if (isTutorialSolved()) {
         setTimeout(() => checkWinCondition(), 800);
     }
 }
+
+window.initTutorial = initTutorial;
 
 const oldDown = window.handlePointerDown;
 window.handlePointerDown = function(e) {
@@ -189,11 +194,13 @@ window.handleDrop = function(movedGroupId) {
             tutorialStep++;
             hideHand();
             oldDrop(movedGroupId);
-            if (tutorialStep >= TUTORIAL_MOVES.length) {
-                setTimeout(finishTutorial, 1200);
-            } else {
-                setTimeout(showTutorialStep, 1000);
-            }
+            setTimeout(() => {
+                if (isTutorialSolved() || tutorialStep >= TUTORIAL_MOVES.length) {
+                    finishTutorial();
+                } else {
+                    showTutorialStep();
+                }
+            }, 1000);
             return;
         } else {
             bounceBack(movedPieceIds.map(id => pieces.find(item => item.id === id)));

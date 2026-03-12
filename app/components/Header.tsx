@@ -1,5 +1,6 @@
 'use client';
-import { useState } from 'react';
+
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
 const navLinks = [
@@ -12,146 +13,91 @@ const navLinks = [
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
 
+  useEffect(() => {
+    document.body.classList.toggle('nav-open', isOpen);
+    return () => document.body.classList.remove('nav-open');
+  }, [isOpen]);
+
+  useEffect(() => {
+    function handleResize() {
+      if (window.innerWidth > 768) {
+        setIsOpen(false);
+      }
+    }
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   return (
-    <header style={{
-      position: 'fixed',
-      top: '1.5rem',
-      left: '50%',
-      transform: 'translateX(-50%)',
-      zIndex: 1000,
-      width: 'calc(100% - 2rem)',
-      maxWidth: '700px',
-      background: 'rgba(56, 33, 19, 0.85)', /* --wood-dim equivalent */
-      backdropFilter: 'blur(12px)',
-      WebkitBackdropFilter: 'blur(12px)',
-      border: '3px solid var(--wood-main)',
-      borderRadius: '40px',
-      boxShadow: '0 12px 24px rgba(0, 0, 0, 0.4), inset 0 -4px 0 rgba(0,0,0,0.3)',
-    }}>
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        height: '64px',
-        padding: '0 1.5rem',
-      }}>
-        <Link href="/" style={{
-          fontFamily: 'var(--font-display)',
-          fontWeight: 700,
-          fontSize: '1.25rem',
-          letterSpacing: '1px',
-          color: 'var(--white)',
-          WebkitTextStroke: '1px var(--wood-dark)',
-          textShadow: '0 2px 0 var(--wood-dark)',
-          textTransform: 'uppercase',
-        }}>
-          JigMerge
-        </Link>
+    <>
+      <header className="site-header">
+        <div className="site-header-bar">
+          <button
+            type="button"
+            className="site-header-menu"
+            aria-label={isOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={isOpen}
+            onClick={() => setIsOpen((open) => !open)}
+          >
+            <span />
+            <span />
+            <span />
+          </button>
 
-        <nav className="desktop-nav" style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.125rem',
-        }}>
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              style={{
-                padding: '0.375rem 0.75rem',
-                borderRadius: 'var(--radius-sm)',
-                color: 'var(--text-secondary)',
-                fontSize: '0.85rem',
-                fontWeight: 600,
-                transition: 'all var(--transition)',
-                letterSpacing: '0.05em',
-                textTransform: 'uppercase',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = 'var(--white)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.color = 'var(--text-secondary)';
-              }}
-            >
-              {link.label}
-            </Link>
-          ))}
-          <Link href="/play" style={{
-            marginLeft: '0.5rem',
-            padding: '0.5rem 1.25rem',
-            borderRadius: 'var(--radius-xl)',
-            background: 'linear-gradient(to bottom, #ffca58, #fb8500)',
-            color: 'var(--wood-dark)',
-            fontSize: '0.85rem',
-            fontWeight: 800,
-            textTransform: 'uppercase',
-            letterSpacing: '0.05em',
-            border: '2px solid var(--wood-dark)',
-            boxShadow: '0 4px 0 var(--wood-dark), inset 0 2px 0 rgba(255,255,255,0.4)',
-            transition: 'transform 0.1s',
-          }}>
-            Play Now
+          <Link href="/" className="site-header-logo">
+            JigMerge
           </Link>
-        </nav>
 
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className="mobile-menu-btn"
-          aria-label="Toggle menu"
-          style={{
-            display: 'none',
-            background: 'none',
-            border: 'none',
-            color: 'var(--text-primary)',
-            fontSize: '1.25rem',
-            cursor: 'pointer',
-            padding: '0.375rem',
-            lineHeight: 1,
-          }}
-        >
-          {isOpen ? '✕' : '☰'}
-        </button>
-      </div>
+          <nav className="site-header-nav" aria-label="Primary navigation">
+            {navLinks.map((link) => (
+              <Link key={link.href} href={link.href} className="site-header-link">
+                {link.label}
+              </Link>
+            ))}
+            <Link href="/play" className="site-header-cta">
+              Play Now
+            </Link>
+          </nav>
+        </div>
+      </header>
 
-      {isOpen && (
-        <nav className="mobile-nav" style={{
-          padding: '0.5rem 1.5rem 1rem',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '0.5rem',
-          borderTop: '2px solid var(--wood-main)',
-        }}>
+      <div
+        className={`site-drawer-backdrop${isOpen ? ' is-open' : ''}`}
+        onClick={() => setIsOpen(false)}
+        aria-hidden={!isOpen}
+      />
+
+      <aside className={`site-drawer${isOpen ? ' is-open' : ''}`} aria-hidden={!isOpen}>
+        <div className="site-drawer-head">
+          <Link href="/" className="site-drawer-logo" onClick={() => setIsOpen(false)}>
+            JigMerge
+          </Link>
+          <button
+            type="button"
+            className="site-drawer-close"
+            aria-label="Close menu"
+            onClick={() => setIsOpen(false)}
+          >
+            x
+          </button>
+        </div>
+
+        <nav className="site-drawer-nav" aria-label="Mobile navigation">
           {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              onClick={() => setIsOpen(false)}
-              style={{
-                padding: '0.5rem 0.25rem',
-                borderRadius: 'var(--radius-sm)',
-                color: 'var(--white)',
-                fontSize: '0.9rem',
-                fontWeight: 600,
-                textTransform: 'uppercase',
-                letterSpacing: '1px',
-              }}
-            >
+            <Link key={link.href} href={link.href} className="site-drawer-link" onClick={() => setIsOpen(false)}>
               {link.label}
             </Link>
           ))}
         </nav>
-      )}
 
-      <style jsx global>{`
-        @media (max-width: 768px) {
-          .desktop-nav { display: none !important; }
-          .mobile-menu-btn { display: block !important; }
-        }
-        @media (min-width: 769px) {
-          .mobile-nav { display: none !important; }
-        }
-      `}</style>
-    </header>
+        <div className="site-drawer-footer">
+          <p>Pick up a quick round, browse guides, or jump straight into the puzzle board.</p>
+          <Link href="/play" className="site-drawer-cta" onClick={() => setIsOpen(false)}>
+            Start Playing
+          </Link>
+        </div>
+      </aside>
+    </>
   );
 }
