@@ -5,6 +5,7 @@ import Link from 'next/link';
 
 const navLinks = [
   { href: '/play', label: 'Play' },
+  { href: '/categories', label: 'Collections' },
   { href: '/how-to-play', label: 'Guide' },
   { href: '/blog', label: 'Blog' },
   { href: '/about', label: 'About' },

@@ -176,6 +176,27 @@ let playerProgress = loadProgress();
 unlockedLevel = playerProgress.unlockedLevel || 1;
 isZenMode = !!playerProgress.zenMode;
 
+function getRequestedStart() {
+    const params = new URLSearchParams(window.location.search);
+    const collection = Number.parseInt(params.get('collection') || '', 10);
+    const puzzle = Number.parseInt(params.get('puzzle') || '0', 10);
+    const hasCollection = Number.isInteger(collection) && collection >= 1 && collection <= Object.keys(LEVELS).length;
+    const hasPuzzle = Number.isInteger(puzzle) && puzzle >= 0;
+
+    if (!hasCollection) return null;
+
+    const images = window.LEVEL_IMAGES ? window.LEVEL_IMAGES[collection] : null;
+    const maxPuzzles = images ? images.length : 0;
+    if (!maxPuzzles) return null;
+
+    return {
+        category: collection,
+        puzzleIndex: hasPuzzle ? Math.min(puzzle, maxPuzzles - 1) : 0,
+    };
+}
+
+let requestedStart = null;
+
 function loadProgress() {
     try {
         const raw = localStorage.getItem(STORAGE_KEY);
@@ -572,6 +593,14 @@ function playSound(type) {
     else if (type === 'click') soundEngine.click();
 }
 
+function safePlaySound(type) {
+    try {
+        playSound(type);
+    } catch (error) {
+        console.warn('Sound playback failed', error);
+    }
+}
+
 // â”€â”€ Confetti System â”€â”€
 class ConfettiSystem {
     constructor(canvas) {
@@ -686,6 +715,7 @@ function buildLevels() {
 }
 
 const LEVELS = buildLevels();
+requestedStart = getRequestedStart();
 
 // Helper: format standard names for puzzles inside a category
 function getPuzzleName(categoryId, index) {
@@ -1362,7 +1392,6 @@ function mergeGroupsSilent(groupIdA, groupIdB) {
 }
 
 function checkWinCondition() {
-    if (typeof isTutorialActive !== 'undefined' && isTutorialActive) return;
     setTimeout(() => {
         const remainingGroups = Object.keys(groups);
         if (remainingGroups.length === 1) {
@@ -1521,6 +1550,80 @@ function showPuzzleSelect(categoryId) {
     PUZZLE_GRID.classList.remove('hidden');
     
     generatePuzzleGrid(categoryId);
+}
+
+function generatePuzzleGrid(categoryId) {
+    if (!PUZZLE_GRID) return;
+
+    const config = LEVELS[categoryId] || LEVELS[1];
+    const images = window.LEVEL_IMAGES ? (window.LEVEL_IMAGES[categoryId] || []) : [];
+    const firstImageUrl = images.length > 0
+        ? `/levels/${config.folder}/${encodeURIComponent(images[0])}`
+        : '';
+    const isLastPlayed = playerProgress.lastPlayed?.category === categoryId;
+
+    PUZZLE_GRID.innerHTML = '';
+    PUZZLE_GRID.classList.add('collection-groups');
+
+    const group = document.createElement('section');
+    group.className = 'puzzle-group';
+    group.innerHTML = `
+        <div class="puzzle-group-header">
+            <div>
+                <div class="puzzle-group-title">Collection ${String(categoryId).padStart(2, '0')}</div>
+                <div class="puzzle-group-meta">${config.rows}x${config.cols} board</div>
+            </div>
+            ${isLastPlayed ? '<span class="last-played-pill">Last played</span>' : ''}
+        </div>
+        <div class="puzzle-group-cover">
+            <div class="puzzle-group-cover-thumb"${firstImageUrl ? ` style="background-image:url('${firstImageUrl}')"` : ''}></div>
+            <div class="puzzle-group-cover-meta">
+                <div class="puzzle-group-title">Puzzle Set</div>
+                <div class="puzzle-group-desc">Pick any puzzle in this collection and rebuild the full image by swapping tiles into place.</div>
+            </div>
+        </div>
+    `;
+
+    const gridEl = document.createElement('div');
+    gridEl.className = 'puzzle-group-grid';
+
+    if (!images.length) {
+        const emptyState = document.createElement('p');
+        emptyState.className = 'sidebar-hint';
+        emptyState.textContent = 'No puzzles are available in this collection yet.';
+        group.appendChild(emptyState);
+        PUZZLE_GRID.appendChild(group);
+        return;
+    }
+
+    images.forEach((imageName, index) => {
+        const btn = document.createElement('button');
+        btn.className = 'wood-btn level-btn';
+
+        const thumbUrl = `/levels/${config.folder}/${encodeURIComponent(imageName)}`;
+        const best = getBestScore(categoryId, index);
+        const starLabel = best ? `${'★'.repeat(best.stars)}${'☆'.repeat(3 - best.stars)}` : 'New';
+        const puzzleLabel = String(index + 1).padStart(2, '0');
+
+        btn.innerHTML = `
+            <div style="width:100%;flex:1;min-height:0;background-image:url('${thumbUrl}');background-size:contain;background-repeat:no-repeat;background-position:center;border-radius:6px;margin-bottom:4px;"></div>
+            <span style="font-size:14px;letter-spacing:0;">Puzzle ${puzzleLabel}</span>
+            <span class="stars-mini" style="font-size:10px;letter-spacing:0;">${starLabel}</span>
+        `;
+
+        btn.addEventListener('click', () => {
+            playSound('click');
+            currentCategory = categoryId;
+            currentPuzzleIndex = index;
+            showGame();
+            setTimeout(() => initLevel(categoryId, index), 100);
+        });
+
+        gridEl.appendChild(btn);
+    });
+
+    group.appendChild(gridEl);
+    PUZZLE_GRID.appendChild(group);
 }
 
 // â”€â”€ UI Wiring â”€â”€
@@ -1837,319 +1940,230 @@ function syncSidebarBehavior() {
         if (sidebarPinnedOpen) expandSidebar(true);
         else collapseSidebar(true);
     } else {
+        sidebarPinnedOpen = true;
+        perksSidebarPinnedOpen = true;
         GAME_SIDEBAR_EL.classList.remove('collapsed');
-        GAME_AREA.classList.remove('sidebar-hidden');
-        gsap.killTweensOf([GAME_SIDEBAR_EL, GAME_AREA]);
+        if (PERKS_SIDEBAR_EL) PERKS_SIDEBAR_EL.classList.remove('collapsed');
+        GAME_AREA.classList.remove('sidebar-hidden', 'perks-sidebar-hidden');
+        gsap.killTweensOf([GAME_SIDEBAR_EL, PERKS_SIDEBAR_EL, GAME_AREA]);
         gsap.set(GAME_SIDEBAR_EL, { clearProps: 'x,opacity,pointerEvents' });
-        gsap.set(GAME_AREA, { '--right-sidebar-width': `${updateSidebarWidthCache()}px` });
+        if (PERKS_SIDEBAR_EL) gsap.set(PERKS_SIDEBAR_EL, { clearProps: 'x,opacity,pointerEvents' });
+        gsap.set(GAME_AREA, {
+            '--left-sidebar-width': `${updatePerksSidebarWidthCache()}px`,
+            '--right-sidebar-width': `${updateSidebarWidthCache()}px`,
+        });
     }
+}
 
-    if (PERKS_SIDEBAR_EL) {
-        if (PERKS_SIDEBAR_EL.classList.contains('collapsed')) {
-            gsap.set(GAME_AREA, { '--left-sidebar-width': '0px' });
-            gsap.set(PERKS_SIDEBAR_EL, { x: -(updatePerksSidebarWidthCache() + 12), opacity: 0.2, pointerEvents: 'none' });
-        } else {
-            gsap.set(GAME_AREA, { '--left-sidebar-width': `${updatePerksSidebarWidthCache()}px` });
-            gsap.set(PERKS_SIDEBAR_EL, { clearProps: 'x,opacity,pointerEvents' });
-        }
+function syncAppViewportHeight() {
+    const height = window.innerHeight || document.documentElement.clientHeight;
+    document.documentElement.style.setProperty('--app-height', `${height}px`);
+}
 
-        if (isSidebarAutoMode()) {
-            if (perksSidebarPinnedOpen) expandPerksSidebar(true);
-            else collapsePerksSidebar(true);
-        } else {
-            GAME_AREA.classList.remove('perks-sidebar-hidden');
-            gsap.set(GAME_AREA, { '--left-sidebar-width': `${updatePerksSidebarWidthCache()}px` });
-            gsap.set(PERKS_SIDEBAR_EL, { clearProps: 'x,opacity,pointerEvents' });
-        }
+function syncSoundControls() {
+    const settingsSoundBtn = document.getElementById('toggle-sound-btn');
+    if (settingsSoundBtn) {
+        settingsSoundBtn.textContent = `SOUND: ${isMuted ? 'OFF' : 'ON'}`;
     }
-
-    syncMobileDrawerTriggers();
+    if (volumeSliderMenu) {
+        volumeSliderMenu.value = String(soundEngine.sfxVolume);
+    }
 }
 
-if (SIDEBAR_TOGGLE_EL && GAME_SIDEBAR_EL) {
-    SIDEBAR_TOGGLE_EL.addEventListener('click', () => {
-        playSound('click');
-        if (isMobileSidebarMode()) {
-            collapseSidebar(true);
-            return;
-        }
-        sidebarPinnedOpen = !sidebarPinnedOpen;
-        if (sidebarPinnedOpen) {
-            const activeTab = document.querySelector('.sidebar-tab.active');
-            openSidebarPanel(activeTab ? activeTab.getAttribute('data-sidebar-panel') : 'reference-panel');
-        } else if (isSidebarAutoMode()) collapseSidebar();
-    });
-}
-
-if (PERKS_SIDEBAR_TOGGLE_EL && PERKS_SIDEBAR_EL) {
-    PERKS_SIDEBAR_TOGGLE_EL.addEventListener('click', () => {
-        playSound('click');
-        if (isMobileSidebarMode()) {
-            collapsePerksSidebar(true);
-            return;
-        }
-        perksSidebarPinnedOpen = !perksSidebarPinnedOpen;
-        if (perksSidebarPinnedOpen) expandPerksSidebar(true);
-        else if (isSidebarAutoMode()) collapsePerksSidebar();
-    });
-}
-
-if (PERKS_SIDEBAR_EL) {
-    PERKS_SIDEBAR_EL.addEventListener('mouseenter', clearPerksSidebarHideTimer);
-    PERKS_SIDEBAR_EL.addEventListener('mouseleave', schedulePerksSidebarCollapse);
-}
-
-if (PERKS_HOVER_ZONE_EL) {
-    PERKS_HOVER_ZONE_EL.addEventListener('mouseenter', () => expandPerksSidebar());
-    PERKS_HOVER_ZONE_EL.addEventListener('mouseleave', schedulePerksSidebarCollapse);
-}
-
-if (GAME_SIDEBAR_EL) {
-    GAME_SIDEBAR_EL.addEventListener('mouseenter', clearSidebarHideTimer);
-    GAME_SIDEBAR_EL.addEventListener('mouseleave', scheduleSidebarCollapse);
-}
-
-if (SIDEBAR_HOVER_ZONE_EL) {
-    SIDEBAR_HOVER_ZONE_EL.addEventListener('mouseenter', () => expandSidebar());
-    SIDEBAR_HOVER_ZONE_EL.addEventListener('mouseleave', scheduleSidebarCollapse);
-}
-
-if (PERKS_EDGE_HINT_EL) {
-    PERKS_EDGE_HINT_EL.addEventListener('click', () => {
-        playSound('click');
-        if (GAME_AREA && GAME_AREA.classList.contains('mobile-perks-open')) collapsePerksSidebar(true);
-        else expandPerksSidebar(true);
-    });
-}
-
-if (SIDEBAR_EDGE_HINT_EL) {
-    SIDEBAR_EDGE_HINT_EL.addEventListener('click', () => {
-        playSound('click');
-        if (GAME_AREA && GAME_AREA.classList.contains('mobile-sidebar-open')) collapseSidebar(true);
-        else {
-            const activeTab = document.querySelector('.sidebar-tab.active');
-            openSidebarPanel(activeTab ? activeTab.getAttribute('data-sidebar-panel') : 'reference-panel');
-        }
-    });
-}
-
-if (MOBILE_PANEL_BACKDROP_EL) {
-    MOBILE_PANEL_BACKDROP_EL.addEventListener('click', () => {
-        closeMobilePanels();
-    });
-}
-
-if (MOBILE_PERKS_TRIGGER_EL) {
-    MOBILE_PERKS_TRIGGER_EL.addEventListener('click', () => {
-        playSound('click');
-        if (GAME_AREA && GAME_AREA.classList.contains('mobile-perks-open')) collapsePerksSidebar(true);
-        else expandPerksSidebar(true);
-    });
-}
-
-if (MOBILE_SIDEBAR_TRIGGER_EL) {
-    MOBILE_SIDEBAR_TRIGGER_EL.addEventListener('click', () => {
-        playSound('click');
-        if (GAME_AREA && GAME_AREA.classList.contains('mobile-sidebar-open')) collapseSidebar(true);
-        else {
-            const activeTab = document.querySelector('.sidebar-tab.active');
-            openSidebarPanel(activeTab ? activeTab.getAttribute('data-sidebar-panel') : 'reference-panel');
-        }
-    });
-}
-
-let boardFitTimer = null;
-
-function handleViewportResize() {
-    syncAppViewportHeight();
-    syncSidebarBehavior();
-    clearTimeout(boardFitTimer);
-    boardFitTimer = setTimeout(() => {
-        fitBoardToViewport();
-    }, 120);
-}
-
-window.addEventListener('resize', handleViewportResize);
-window.addEventListener('orientationchange', handleViewportResize);
-if (window.visualViewport) {
-    window.visualViewport.addEventListener('resize', handleViewportResize);
-}
-
-const pauseBtn = document.getElementById('pause-btn');
-if (pauseBtn) {
-    pauseBtn.addEventListener('click', () => {
-        playSound('click');
-        BOARD.innerHTML = '';
-        stopTimer();
-        showCategorySelect();
-    });
-}
-
+const startBtn = document.getElementById('start-btn');
+const browseBtn = document.getElementById('browse-btn');
 const backToMainBtn = document.getElementById('back-to-main-btn');
-if (backToMainBtn) {
-    backToMainBtn.addEventListener('click', () => {
-        playSound('click');
-        if (!PUZZLE_GRID.classList.contains('hidden')) {
-            showCategorySelect();
-        } else {
-            showMainMenu();
-        }
-    });
+const pauseBtn = document.getElementById('pause-btn');
+const settingsBtn = document.getElementById('settings-btn');
+const settingsOverlay = document.getElementById('settings-overlay');
+const closeSettingsBtn = document.getElementById('close-settings-btn');
+const toggleSoundBtn = document.getElementById('toggle-sound-btn');
+const toggleZenBtn = document.getElementById('toggle-zen-btn');
+const zenToggleMenuBtn = document.getElementById('zen-toggle-menu');
+const levelSelectBtn = document.getElementById('level-select-btn');
+
+function openSettings() {
+    if (!settingsOverlay) return;
+    syncSoundControls();
+    updateModeLabels();
+    settingsOverlay.classList.remove('hidden');
 }
 
+function closeSettings() {
+    if (!settingsOverlay) return;
+    settingsOverlay.classList.add('hidden');
+}
 
-function generatePuzzleGrid(categoryId) {
-    PUZZLE_GRID.innerHTML = '';
-    PUZZLE_GRID.classList.add('collection-groups');
-    
-    const images = window.LEVEL_IMAGES ? window.LEVEL_IMAGES[categoryId] : null;
-    const maxPuzzles = images ? images.length : 0;
-    
-    if (maxPuzzles === 0) {
-        PUZZLE_GRID.innerHTML = '<p class="wood-text" style="grid-column: 1/-1; text-align: center;">No puzzles found in this level.</p>';
+function startCurrentGame(selection = requestedStart || playerProgress.lastPlayed || defaultProgress.lastPlayed) {
+    if (!selection) {
+        showCategorySelect();
         return;
     }
 
-    const config = LEVELS[categoryId];
-    const groupSize = 4;
-    const isLastPlayedCategory = (playerProgress.lastPlayed || defaultProgress.lastPlayed).category === categoryId;
-    const lastPlayedPuzzle = (playerProgress.lastPlayed || defaultProgress.lastPlayed).puzzleIndex;
-
-    for (let groupStart = 0; groupStart < maxPuzzles; groupStart += groupSize) {
-        const groupEnd = Math.min(groupStart + groupSize, maxPuzzles);
-        const groupSection = document.createElement('section');
-        groupSection.className = 'puzzle-group';
-        const coverImgUrl = `/levels/${config.folder}/${encodeURIComponent(images[groupStart])}`;
-        const groupHasLastPlayed = isLastPlayedCategory && lastPlayedPuzzle >= groupStart && lastPlayedPuzzle < groupEnd;
-
-        const clearedCount = Array.from({ length: groupEnd - groupStart }, (_, offset) => getBestScore(categoryId, groupStart + offset)).filter(Boolean).length;
-        groupSection.innerHTML = `
-            <div class="puzzle-group-header">
-                <div class="puzzle-group-title">Set ${Math.floor(groupStart / groupSize) + 1}</div>
-                <div class="puzzle-group-meta">${clearedCount}/${groupEnd - groupStart} cleared</div>
-            </div>
-            <div class="puzzle-group-cover">
-                <div class="puzzle-group-cover-thumb" style="background-image:url('${coverImgUrl}')"></div>
-                <div class="puzzle-group-cover-meta">
-                    ${groupHasLastPlayed ? '<div class="last-played-pill">Last played</div>' : ''}
-                    <div class="puzzle-group-desc">A small run of ${groupEnd - groupStart} puzzles with shared mood and pacing.</div>
-                </div>
-            </div>
-            <div class="puzzle-group-grid"></div>
-        `;
-
-        const groupGrid = groupSection.querySelector('.puzzle-group-grid');
-
-        for (let i = groupStart; i < groupEnd; i++) {
-            const btn = document.createElement('button');
-            btn.className = 'wood-btn level-btn puzzle-btn';
-
-            const puzzleName = getPuzzleName(categoryId, i);
-            const best = getBestScore(categoryId, i);
-            const starText = best ? `${'â˜…'.repeat(best.stars)}${'â˜†'.repeat(3 - best.stars)}` : 'New';
-            const imgUrl = `/levels/${config.folder}/${encodeURIComponent(images[i])}`;
-            const isLastPlayed = isLastPlayedCategory && lastPlayedPuzzle === i;
-
-            btn.innerHTML = `
-                <div style="width: 100%; flex: 1; min-height: 0; background-image: url('${imgUrl}'); background-size: contain; background-repeat: no-repeat; background-position: center; border-radius: 6px; margin-bottom: 6px;"></div>
-                <span style="font-size: 13px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; width: 100%; text-align: center; letter-spacing: 0;">${puzzleName}</span>
-                <span class="stars-mini" style="font-size: 10px; letter-spacing: 0; margin-top: 4px;">${starText}</span>
-                ${isLastPlayed ? '<span class="level-size" style="font-size:10px; letter-spacing:0.04em;">Resume</span>' : ''}
-            `;
-
-            btn.addEventListener('click', () => {
-                currentCategory = categoryId;
-                currentPuzzleIndex = i;
-                showGame();
-                setTimeout(() => initLevel(categoryId, i), 100);
-            });
-
-            groupGrid.appendChild(btn);
-        }
-
-        PUZZLE_GRID.appendChild(groupSection);
-    }
+    currentCategory = selection.category;
+    currentPuzzleIndex = selection.puzzleIndex;
+    showGame();
+    setTimeout(() => initLevel(currentCategory, currentPuzzleIndex), 100);
 }
 
-// â”€â”€ Menu Button Handlers â”€â”€
-const START_BTN = document.getElementById('start-btn');
-START_BTN.addEventListener('click', () => {
-    playSound('click');
-    const isTutorialDone = localStorage.getItem('jigmerge_tutorial_done') === 'true';
-    if (!isTutorialDone) {
-        showGame();
-        initTutorial();
-    } else {
-        const { category, puzzleIndex } = playerProgress.lastPlayed || defaultProgress.lastPlayed;
-        showGame();
-        setTimeout(() => initLevel(category, puzzleIndex), 100);
-    }
-});
+if (startBtn) {
+    startBtn.addEventListener('click', () => {
+        safePlaySound('click');
+        startCurrentGame();
+    });
+}
 
-const browseBtn = document.getElementById('browse-btn');
 if (browseBtn) {
     browseBtn.addEventListener('click', () => {
-        playSound('click');
+        safePlaySound('click');
         showCategorySelect();
     });
 }
 
-const levelSelectBtn = document.getElementById('level-select-btn');
+if (backToMainBtn) {
+    backToMainBtn.addEventListener('click', () => {
+        safePlaySound('click');
+        showMainMenu();
+    });
+}
+
+if (pauseBtn) {
+    pauseBtn.addEventListener('click', () => {
+        safePlaySound('click');
+        showCategorySelect();
+    });
+}
+
 if (levelSelectBtn) {
     levelSelectBtn.addEventListener('click', () => {
-        playSound('click');
+        safePlaySound('click');
         WIN_OVERLAY.classList.add('hidden');
         showCategorySelect();
     });
 }
 
-const zenToggleMenuBtn = document.getElementById('zen-toggle-menu');
+if (settingsBtn) {
+    settingsBtn.addEventListener('click', () => {
+        safePlaySound('click');
+        openSettings();
+    });
+}
+
+if (closeSettingsBtn) {
+    closeSettingsBtn.addEventListener('click', () => {
+        safePlaySound('click');
+        closeSettings();
+    });
+}
+
+if (toggleSoundBtn) {
+    toggleSoundBtn.addEventListener('click', (event) => {
+        toggleMute(event);
+        syncSoundControls();
+        safePlaySound('click');
+    });
+}
+
+if (toggleZenBtn) {
+    toggleZenBtn.addEventListener('click', () => {
+        safePlaySound('click');
+        toggleZenMode();
+    });
+}
+
 if (zenToggleMenuBtn) {
     zenToggleMenuBtn.addEventListener('click', () => {
-        playSound('click');
+        safePlaySound('click');
         toggleZenMode();
     });
 }
 
-const zenToggleSettingsBtn = document.getElementById('toggle-zen-btn');
-if (zenToggleSettingsBtn) {
-    zenToggleSettingsBtn.addEventListener('click', () => {
-        playSound('click');
-        toggleZenMode();
+if (SIDEBAR_TOGGLE_EL) {
+    SIDEBAR_TOGGLE_EL.addEventListener('click', () => {
+        safePlaySound('click');
+        sidebarPinnedOpen = !sidebarPinnedOpen;
+        if (sidebarPinnedOpen) expandSidebar(true);
+        else collapseSidebar(true);
     });
 }
 
-// Modals
-const SETTINGS_MODAL = document.getElementById('settings-overlay');
-const settingsBtn = document.getElementById('settings-btn');
-if (settingsBtn) {
-    settingsBtn.addEventListener('click', () => SETTINGS_MODAL.classList.remove('hidden'));
+if (PERKS_SIDEBAR_TOGGLE_EL) {
+    PERKS_SIDEBAR_TOGGLE_EL.addEventListener('click', () => {
+        safePlaySound('click');
+        perksSidebarPinnedOpen = !perksSidebarPinnedOpen;
+        if (perksSidebarPinnedOpen) expandPerksSidebar(true);
+        else collapsePerksSidebar(true);
+    });
 }
-document.getElementById('close-settings-btn').addEventListener('click', () => {
-    SETTINGS_MODAL.classList.add('hidden');
+
+if (SIDEBAR_HOVER_ZONE_EL) {
+    SIDEBAR_HOVER_ZONE_EL.addEventListener('pointerenter', () => expandSidebar());
+    SIDEBAR_HOVER_ZONE_EL.addEventListener('pointerleave', () => scheduleSidebarCollapse());
+}
+
+if (GAME_SIDEBAR_EL) {
+    GAME_SIDEBAR_EL.addEventListener('pointerenter', () => clearSidebarHideTimer());
+    GAME_SIDEBAR_EL.addEventListener('pointerleave', () => scheduleSidebarCollapse());
+}
+
+if (SIDEBAR_EDGE_HINT_EL) {
+    SIDEBAR_EDGE_HINT_EL.addEventListener('click', () => {
+        safePlaySound('click');
+        expandSidebar(true);
+    });
+}
+
+if (PERKS_HOVER_ZONE_EL) {
+    PERKS_HOVER_ZONE_EL.addEventListener('pointerenter', () => expandPerksSidebar());
+    PERKS_HOVER_ZONE_EL.addEventListener('pointerleave', () => schedulePerksSidebarCollapse());
+}
+
+if (PERKS_SIDEBAR_EL) {
+    PERKS_SIDEBAR_EL.addEventListener('pointerenter', () => clearPerksSidebarHideTimer());
+    PERKS_SIDEBAR_EL.addEventListener('pointerleave', () => schedulePerksSidebarCollapse());
+}
+
+if (PERKS_EDGE_HINT_EL) {
+    PERKS_EDGE_HINT_EL.addEventListener('click', () => {
+        safePlaySound('click');
+        expandPerksSidebar(true);
+    });
+}
+
+if (MOBILE_SIDEBAR_TRIGGER_EL) {
+    MOBILE_SIDEBAR_TRIGGER_EL.addEventListener('click', () => {
+        safePlaySound('click');
+        if (GAME_AREA?.classList.contains('mobile-sidebar-open')) collapseSidebar(true);
+        else expandSidebar(true);
+    });
+}
+
+if (MOBILE_PERKS_TRIGGER_EL) {
+    MOBILE_PERKS_TRIGGER_EL.addEventListener('click', () => {
+        safePlaySound('click');
+        if (GAME_AREA?.classList.contains('mobile-perks-open')) collapsePerksSidebar(true);
+        else expandPerksSidebar(true);
+    });
+}
+
+if (MOBILE_PANEL_BACKDROP_EL) {
+    MOBILE_PANEL_BACKDROP_EL.addEventListener('click', closeMobilePanels);
+}
+
+window.addEventListener('resize', () => {
+    syncAppViewportHeight();
+    syncSidebarBehavior();
+    fitBoardToViewport();
 });
 
-// Sound Toggle
-const toggleSoundBtn = document.getElementById('toggle-sound-btn');
-toggleSoundBtn.addEventListener('click', () => {
-    isMuted = !isMuted;
-    toggleSoundBtn.innerText = isMuted ? 'SOUND: OFF' : 'SOUND: ON';
-    if (!isMuted) playSound('snap');
-});
-
-// â”€â”€ Initialize â”€â”€
 applyTheme(playerProgress.activeTheme || 'cozy-hearth');
 updateCoinDisplays();
 updateModeLabels();
 updateCollectionProgress();
 renderShop();
 startComingSoonRotation();
+syncAppViewportHeight();
+syncSoundControls();
 syncSidebarBehavior();
 
-if (localStorage.getItem('jigmerge_tutorial_done') === 'true') {
-    const { category, puzzleIndex } = playerProgress.lastPlayed || defaultProgress.lastPlayed;
-    showGame();
-    setTimeout(() => initLevel(category, puzzleIndex), 100);
-} else {
-    showMainMenu();
-}
+startCurrentGame(requestedStart || playerProgress.lastPlayed || defaultProgress.lastPlayed);

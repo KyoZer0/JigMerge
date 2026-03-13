@@ -4,11 +4,29 @@ import GameEmbedActions from '../components/GameEmbedActions';
 
 export const metadata: Metadata = {
     title: 'Play JigMerge – Free Online Puzzle Game',
-    description: 'Play JigMerge free! Select a category, choose your level, and swap tiles to restore beautiful images. No downloads, no accounts needed.',
+    description: 'Play JigMerge free. Pick a live collection, jump into a puzzle set, and swap tiles to restore the image.',
     keywords: ['play JigMerge', 'free puzzle game online', 'jigsaw solitaire game', 'tile swap puzzle', 'play puzzle online'],
 };
 
-export default function PlayPage() {
+type PlayPageProps = {
+    searchParams?: Promise<{ collection?: string; puzzle?: string }>;
+};
+
+export default async function PlayPage({ searchParams }: PlayPageProps) {
+    const params = searchParams ? await searchParams : undefined;
+    const iframeQuery = new URLSearchParams();
+
+    if (params?.collection) {
+        iframeQuery.set('collection', params.collection);
+    }
+
+    if (params?.puzzle) {
+        iframeQuery.set('puzzle', params.puzzle);
+    }
+
+    const iframeSrc = iframeQuery.size > 0 ? `/game/index.html?${iframeQuery.toString()}` : '/game/index.html';
+    const shareUrl = iframeQuery.size > 0 ? `/play?${iframeQuery.toString()}` : '/play';
+
     return (
         <>
             {/* Game Section — full viewport */}
@@ -23,14 +41,14 @@ export default function PlayPage() {
                     <div className="play-frame-shell">
                         <div id="play-game-frame" className="play-frame-card">
                             <iframe
-                                src="/game/index.html"
+                                src={iframeSrc}
                                 title="JigMerge Game"
                                 className="play-iframe"
                                 allow="autoplay"
                                 loading="lazy"
                             />
                         </div>
-                        <GameEmbedActions targetId="play-game-frame" shareUrl="/play" />
+                        <GameEmbedActions targetId="play-game-frame" shareUrl={shareUrl} />
                     </div>
                 </main>
             </div>
@@ -45,7 +63,7 @@ export default function PlayPage() {
                         <div className="step-card">
                             <div className="step-number">1</div>
                             <h3>Choose a Category</h3>
-                            <p>Pick from Animals, Nature, Cities, Art, or Food — each with unique images to solve.</p>
+                            <p>Pick a collection and jump into its current puzzle set without leaving the browser.</p>
                         </div>
                         <div className="step-card">
                             <div className="step-number">2</div>

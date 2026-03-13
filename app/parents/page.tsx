@@ -70,8 +70,8 @@ export default function ParentsPage() {
                     Children do not need to create accounts to play JigMerge. The current site does not include an
                     in-game form that collects a child&apos;s profile or progress history. Some limited technical data may
                     still be processed by hosting infrastructure or advertising providers in the normal operation of a
-                    website, and simple browser storage may be used to remember local gameplay state such as tutorial
-                    completion. For fuller detail, please review the <a href="/privacy-policy">Privacy Policy</a>{' '}
+                    website, and simple browser storage may be used to remember local gameplay state such as puzzle
+                    progress or preferences. For fuller detail, please review the <a href="/privacy-policy">Privacy Policy</a>{' '}
                     and <a href="/cookie-policy">Cookie Policy</a>.
                 </p>
 

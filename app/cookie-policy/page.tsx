@@ -36,8 +36,9 @@ export default function CookiePolicyPage() {
                 <h2>2. What Browser Storage Is</h2>
                 <p>
                     Browser storage, including localStorage, lets a site remember simple information on your device.
-                    In JigMerge, this can be used for lightweight gameplay state such as whether the tutorial has been
-                    completed. Unlike account-based storage, this information stays in your browser unless you clear it.
+                    In JigMerge, this can be used for lightweight gameplay state such as local progress, selected mode,
+                    or interface preferences. Unlike account-based storage, this information stays in your browser
+                    unless you clear it.
                 </p>
 
                 <h2>3. How JigMerge Uses These Technologies</h2>
@@ -45,9 +46,9 @@ export default function CookiePolicyPage() {
 
                 <h3>Local gameplay storage</h3>
                 <p>
-                    The current game stores a limited tutorial-completion flag in your browser so returning players do
-                    not need to repeat the tutorial every time. This is functional browser storage tied to the local
-                    device and browser.
+                    The current game stores limited local preferences and gameplay progress in your browser so the
+                    experience can remember things like your last played puzzle or selected options on that device.
+                    This is functional browser storage tied to the local device and browser.
                 </p>
 
                 <h3>Site delivery and security technologies</h3>
@@ -73,7 +74,8 @@ export default function CookiePolicyPage() {
                 <h2>5. Managing Cookies and Browser Storage</h2>
                 <p>
                     You can control cookies and local storage through your browser settings. Keep in mind that blocking
-                    or clearing storage may affect parts of the site, including saved tutorial state or ad preferences.
+                    or clearing storage may affect parts of the site, including saved local game preferences,
+                    progress, or ad preferences.
                 </p>
                 <ul>
                     <li><a href="https://support.google.com/chrome/answer/95647" target="_blank" rel="noopener noreferrer">Google Chrome cookie settings</a></li>

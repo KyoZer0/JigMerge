@@ -1,12 +1,12 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { categories } from '../lib/gameData';
+import { gameCollections } from '../lib/gameData';
 
 export const metadata: Metadata = {
-  title: 'Puzzle Categories',
+  title: 'Puzzle Collections',
   description:
-    'Browse all JigMerge puzzle categories. Explore Animals, Nature, Cities, Art, and Food levels with beginner-to-expert difficulty.',
-  keywords: ['puzzle categories', 'jigsaw categories', 'JigMerge categories'],
+    'Browse all live JigMerge collections. Explore every 3x3, 6x6, and 9x9 board set available in the embedded game.',
+  keywords: ['puzzle collections', 'JigMerge collections', 'browser puzzle boards'],
 };
 
 export default function CategoriesPage() {
@@ -14,9 +14,9 @@ export default function CategoriesPage() {
     <>
       <div className="page-header">
         <div className="container">
-          <h1 className="gradient-text">Puzzle Categories</h1>
+          <h1 className="gradient-text">Puzzle Collections</h1>
           <p>
-            Choose a category to explore all levels and find your favorite puzzle style.
+            Browse the live collections from the embedded game and jump straight into the board size you want.
           </p>
         </div>
       </div>
@@ -29,10 +29,10 @@ export default function CategoriesPage() {
             gap: '1rem',
           }}
         >
-          {categories.map((cat) => (
+          {gameCollections.map((collection) => (
             <Link
-              key={cat.slug}
-              href={`/categories/${cat.slug}`}
+              key={collection.slug}
+              href={`/categories/${collection.slug}`}
               className="card"
               style={{ textDecoration: 'none', display: 'block' }}
             >
@@ -43,11 +43,11 @@ export default function CategoriesPage() {
                   fontSize: '1.2rem',
                 }}
               >
-                <span style={{ marginRight: '0.5rem' }}>{cat.icon}</span>
-                {cat.name}
+                <span style={{ marginRight: '0.5rem', color: collection.color }}>{collection.shortName}</span>
+                {collection.name}
               </h2>
               <p style={{ color: 'var(--text-secondary)', margin: 0, lineHeight: 1.6 }}>
-                {cat.description}
+                {collection.description}
               </p>
               <p
                 style={{
@@ -57,7 +57,7 @@ export default function CategoriesPage() {
                   color: 'var(--text-muted)',
                 }}
               >
-                {cat.levels.length} levels available
+                {collection.gridLabel} board · {collection.puzzleCount} puzzles · {collection.sets.length} sets
               </p>
             </Link>
           ))}

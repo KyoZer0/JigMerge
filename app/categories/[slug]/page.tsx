@@ -1,25 +1,23 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { categories, getCategoryBySlug } from '../../lib/gameData';
+import { gameCollections, getCollectionBySlug, getPlayHref } from '../../lib/gameData';
 import AdSlot from '../../components/AdSlot';
 
-// Generate static params for all categories
 export function generateStaticParams() {
-    return categories.map((cat) => ({ slug: cat.slug }));
+    return gameCollections.map((collection) => ({ slug: collection.slug }));
 }
 
-// Generate metadata for each category
 export async function generateMetadata(
     { params }: { params: Promise<{ slug: string }> }
 ): Promise<Metadata> {
     const { slug } = await params;
-    const cat = getCategoryBySlug(slug);
+    const collection = getCollectionBySlug(slug);
 
-    if (!cat) {
+    if (!collection) {
         return {
-            title: 'Category Not Found',
-            description: 'The requested category could not be found on JigMerge.',
+            title: 'Collection Not Found',
+            description: 'The requested collection could not be found on JigMerge.',
             robots: {
                 index: false,
                 follow: false,
@@ -27,14 +25,14 @@ export async function generateMetadata(
         };
     }
 
-    const title = `${cat.name} Puzzles – ${cat.levels.length} Levels`;
-    const description = `Play ${cat.name.toLowerCase()} puzzles on JigMerge. ${cat.description} ${cat.levels.length} levels from easy to expert.`;
-    const canonicalUrl = `/categories/${cat.slug}`;
+    const title = `${collection.name} – ${collection.puzzleCount} Puzzles`;
+    const description = `Play ${collection.name} on JigMerge. ${collection.description} ${collection.puzzleCount} live boards on a ${collection.gridLabel} layout.`;
+    const canonicalUrl = `/categories/${collection.slug}`;
 
     return {
         title,
         description,
-        keywords: [`${cat.name.toLowerCase()} puzzles`, `${cat.name.toLowerCase()} jigsaw`, `JigMerge ${cat.name.toLowerCase()}`, 'free puzzle game'],
+        keywords: [collection.name.toLowerCase(), `${collection.gridLabel} puzzle board`, 'JigMerge collection', 'free puzzle game'],
         alternates: {
             canonical: canonicalUrl,
         },
@@ -54,9 +52,9 @@ export async function generateMetadata(
 
 export default async function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = await params;
-    const cat = getCategoryBySlug(slug);
+    const collection = getCollectionBySlug(slug);
 
-    if (!cat) {
+    if (!collection) {
         notFound();
     }
 
@@ -65,13 +63,13 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
             <div className="page-header">
                 <div className="container">
                     <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
-                        <Link href="/categories" style={{ color: 'var(--primary-light)' }}>Categories</Link> / {cat.name}
+                        <Link href="/categories" style={{ color: 'var(--primary-light)' }}>Collections</Link> / {collection.name}
                     </div>
                     <h1>
-                        <span style={{ fontSize: '1.2em', marginRight: '0.5rem' }}>{cat.icon}</span>
-                        <span className="gradient-text">{cat.name} Puzzles</span>
+                        <span style={{ fontSize: '1.2em', marginRight: '0.5rem', color: collection.color }}>{collection.shortName}</span>
+                        <span className="gradient-text">{collection.name}</span>
                     </h1>
-                    <p>{cat.description}</p>
+                    <p>{collection.description}</p>
                 </div>
             </div>
 
@@ -82,18 +80,25 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
                     marginBottom: '2rem',
                     fontSize: '1.05rem',
                 }}>
-                    {cat.longDescription}
+                    {collection.longDescription}
                 </p>
+
+                <div className="card" style={{ marginBottom: '1.5rem' }}>
+                    <h2 style={{ marginBottom: '0.5rem' }}>Collection Snapshot</h2>
+                    <p style={{ margin: 0, color: 'var(--text-secondary)' }}>
+                        {collection.gridLabel} board · {collection.puzzleCount} puzzles · {collection.sets.length} playable sets · {collection.difficulty} pace
+                    </p>
+                </div>
 
                 <AdSlot type="banner" />
 
                 <h2 style={{ marginTop: '2rem', marginBottom: '1.5rem' }}>
-                    All {cat.name} Levels
+                    Puzzle Sets in {collection.name}
                 </h2>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    {cat.levels.map((level, i) => (
-                        <Link key={level.id} href="/play" style={{ textDecoration: 'none' }}>
+                    {collection.sets.map((setItem, i) => (
+                        <Link key={setItem.index} href={setItem.playHref} style={{ textDecoration: 'none' }}>
                             <div className="card animate-in" style={{
                                 animationDelay: `${0.1 + i * 0.1}s`,
                                 display: 'flex',
@@ -106,48 +111,46 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
                                     width: '100px',
                                     height: '100px',
                                     borderRadius: 'var(--radius-md)',
-                                    background: `linear-gradient(135deg, ${cat.color}44, ${cat.color}11)`,
+                                    background: `linear-gradient(135deg, ${collection.color}44, ${collection.color}11)`,
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    fontSize: '2.5rem',
+                                    fontSize: '1.1rem',
+                                    fontWeight: 800,
                                     flexShrink: 0,
                                 }}>
-                                    {cat.icon}
+                                    {setItem.label}
                                 </div>
 
-                                {/* Info */}
                                 <div style={{ flex: 1 }}>
-                                    <h3 style={{ marginBottom: '0.25rem', fontSize: '1.2rem' }}>{level.title}</h3>
+                                    <h3 style={{ marginBottom: '0.25rem', fontSize: '1.2rem' }}>{setItem.label}</h3>
                                     <p style={{ color: 'var(--text-muted)', margin: 0, fontSize: '0.9rem' }}>
-                                        Level {i + 1} · {level.gridSize} Grid · {level.gridCols * level.gridRows} tiles
+                                        Starts at puzzle {setItem.puzzleStart + 1} · {setItem.puzzleCount} boards · {collection.gridLabel} layout
                                     </p>
                                 </div>
 
-                                {/* Difficulty badge */}
                                 <div style={{
                                     padding: '0.4rem 1rem',
                                     borderRadius: 'var(--radius-xl)',
                                     fontSize: '0.8rem',
                                     fontWeight: 700,
-                                    background: `${cat.color}22`,
-                                    color: cat.color,
+                                    background: `${collection.color}22`,
+                                    color: collection.color,
                                     flexShrink: 0,
                                 }}>
-                                    {level.difficulty}
+                                    {collection.difficulty}
                                 </div>
 
-                                {/* Play arrow */}
                                 <div style={{
                                     width: '40px',
                                     height: '40px',
                                     borderRadius: '50%',
-                                    background: `${cat.color}22`,
+                                    background: `${collection.color}22`,
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
                                     fontSize: '1.2rem',
-                                    color: cat.color,
+                                    color: collection.color,
                                     flexShrink: 0,
                                 }}>
                                     ▶
@@ -159,20 +162,20 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
 
                 <AdSlot type="banner" />
 
-                {/* SEO content for category */}
                 <div style={{ marginTop: '3rem', color: 'var(--text-secondary)', lineHeight: 1.8 }}>
-                    <h2 style={{ color: 'var(--primary-light)' }}>About {cat.name} Puzzles</h2>
+                    <h2 style={{ color: 'var(--primary-light)' }}>About {collection.name}</h2>
                     <p>
-                        Our {cat.name.toLowerCase()} puzzle collection features {cat.levels.length} carefully
-                        selected levels, starting with an easy 3×3 grid and progressing to challenging
-                        expert-level grids. Each puzzle showcases a different aspect of the{' '}
-                        {cat.name.toLowerCase()} theme, providing a unique visual experience every time.
+                        {collection.name} maps directly to a live collection inside the embedded game. The page
+                        stays aligned with the real board size, real puzzle count, and real launch point used by
+                        the browser game so players know exactly what they are opening.
                     </p>
                     <p>
-                        Whether you&apos;re a beginner or an experienced puzzle solver, the {cat.name.toLowerCase()}{' '}
-                        category has something for you. The progressive difficulty ensures a smooth learning
-                        curve while the beautiful imagery keeps you coming back for more.
+                        If you want to jump straight into this collection, use the button below to open the first
+                        set in Play mode with the correct starting state.
                     </p>
+                    <Link href={getPlayHref(collection.id)} className="btn btn-primary">
+                        Open {collection.name}
+                    </Link>
                 </div>
             </div>
         </>

@@ -61,8 +61,9 @@ export default function PrivacyPolicyPage() {
                 <h2>4. Browser Storage and Gameplay State</h2>
                 <p>
                     The game may store limited information locally in your browser to support the experience. For
-                    example, the current game uses local browser storage to remember whether the tutorial has already
-                    been completed. This information stays on your device unless you clear your browser storage.
+                    example, the current game uses local browser storage to remember local progress, selected options,
+                    and similar on-device gameplay state. This information stays on your device unless you clear your
+                    browser storage.
                 </p>
                 <p>
                     Local storage helps the game remember simple preferences or state without requiring an account.

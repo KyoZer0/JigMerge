@@ -1,12 +1,16 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { posts } from '../lib/blogData';
-import { categories } from '../lib/gameData';
+import { gameCollections } from '../lib/gameData';
 
 export const metadata: Metadata = {
     title: 'Sitemap – All Pages',
     description: 'Browse the complete sitemap of JigMerge. Find every page on our website including games, blog posts, and information pages.',
     keywords: ['JigMerge sitemap', 'all pages', 'site navigation'],
+    robots: {
+        index: false,
+        follow: true,
+    },
 };
 
 const sections = [
@@ -15,16 +19,16 @@ const sections = [
         links: [
             { href: '/', label: 'Home' },
             { href: '/play', label: 'Play JigMerge' },
-            { href: '/categories', label: 'All Categories' },
+            { href: '/categories', label: 'All Collections' },
             { href: '/how-to-play', label: 'How to Play' },
             { href: '/faq', label: 'FAQ' },
         ],
     },
     {
-        title: 'Game Categories',
-        links: categories.map(cat => ({
-            href: `/categories/${cat.slug}`,
-            label: `${cat.icon} ${cat.name}`,
+        title: 'Game Collections',
+        links: gameCollections.map(collection => ({
+            href: `/categories/${collection.slug}`,
+            label: `${collection.badge} · ${collection.gridLabel}`,
         })),
     },
     {

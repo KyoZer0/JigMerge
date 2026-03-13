@@ -2,7 +2,6 @@
 
 import { useEffect, useRef } from 'react';
 import Link from 'next/link';
-import gsap from 'gsap';
 
 /* ── Puzzle-piece SVG path (jigsaw tab shape) ── */
 const PUZZLE_PATH =
@@ -39,7 +38,12 @@ export default function HeroSection() {
     const scrollRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        const ctx = gsap.context(() => {
+        let cleanup = () => {};
+
+        const initAnimations = async () => {
+            const { default: gsap } = await import('gsap');
+
+            const ctx = gsap.context(() => {
             /* ── Floating tiles ── */
             tilesRef.current.forEach((tile, i) => {
                 if (!tile) return;
@@ -146,45 +150,49 @@ export default function HeroSection() {
                 ease: 'sine.inOut',
                 delay: 2.5,
             });
-        }, heroRef);
+            }, heroRef);
 
-        /* ── Mouse parallax (desktop only) ── */
-        const handleMouseMove = (e: MouseEvent) => {
-            if (window.innerWidth < 768) return;
-            const { clientX, clientY } = e;
-            const xPercent = (clientX / window.innerWidth - 0.5) * 2;
-            const yPercent = (clientY / window.innerHeight - 0.5) * 2;
+            /* ── Mouse parallax (desktop only) ── */
+            const handleMouseMove = (e: MouseEvent) => {
+                if (window.innerWidth < 768) return;
+                const { clientX, clientY } = e;
+                const xPercent = (clientX / window.innerWidth - 0.5) * 2;
+                const yPercent = (clientY / window.innerHeight - 0.5) * 2;
 
-            tilesRef.current.forEach((tile, i) => {
-                if (!tile) return;
-                const depth = 0.5 + (i % 3) * 0.3;
-                gsap.to(tile, {
-                    x: `+=${xPercent * 12 * depth}`,
-                    y: `+=${yPercent * 8 * depth}`,
-                    duration: 1,
-                    ease: 'power2.out',
-                    overwrite: 'auto',
+                tilesRef.current.forEach((tile, i) => {
+                    if (!tile) return;
+                    const depth = 0.5 + (i % 3) * 0.3;
+                    gsap.to(tile, {
+                        x: `+=${xPercent * 12 * depth}`,
+                        y: `+=${yPercent * 8 * depth}`,
+                        duration: 1,
+                        ease: 'power2.out',
+                        overwrite: 'auto',
+                    });
                 });
-            });
 
-            orbsRef.current.forEach((orb, i) => {
-                if (!orb) return;
-                gsap.to(orb, {
-                    x: `+=${xPercent * 6 * (i + 1) * 0.3}`,
-                    y: `+=${yPercent * 4 * (i + 1) * 0.3}`,
-                    duration: 1.5,
-                    ease: 'power2.out',
-                    overwrite: 'auto',
+                orbsRef.current.forEach((orb, i) => {
+                    if (!orb) return;
+                    gsap.to(orb, {
+                        x: `+=${xPercent * 6 * (i + 1) * 0.3}`,
+                        y: `+=${yPercent * 4 * (i + 1) * 0.3}`,
+                        duration: 1.5,
+                        ease: 'power2.out',
+                        overwrite: 'auto',
+                    });
                 });
-            });
+            };
+
+            window.addEventListener('mousemove', handleMouseMove);
+            cleanup = () => {
+                ctx.revert();
+                window.removeEventListener('mousemove', handleMouseMove);
+            };
         };
 
-        window.addEventListener('mousemove', handleMouseMove);
+        void initAnimations();
 
-        return () => {
-            ctx.revert();
-            window.removeEventListener('mousemove', handleMouseMove);
-        };
+        return () => cleanup();
     }, []);
 
     return (

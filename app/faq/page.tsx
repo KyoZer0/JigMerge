@@ -28,7 +28,7 @@ const faqs = [
     },
     {
         q: 'How many levels are available?',
-        a: 'The current site includes 25 handcrafted levels across 5 categories. Each category is meant to offer a slightly different visual feel while preserving the same core rules.',
+        a: 'The live game currently includes 19 collections and 367 playable puzzle boards. Collections 01-07 use 3x3 boards, 08-13 use 6x6 boards, and 14-19 use 9x9 boards.',
     },
     {
         q: 'Can I save my progress?',
@@ -56,7 +56,7 @@ const faqs = [
     },
     {
         q: 'Where should I start if I am new?',
-        a: 'The best starting points are the Play page, the How to Play guide, and a few easier categories. Once you understand the merge mechanic, the strategy articles in the blog will make more sense too.',
+        a: 'The best starting points are the Play page, the How to Play guide, and the early 3x3 collections. Once the merge mechanic feels natural, the larger 6x6 and 9x9 collections become much easier to read.',
     },
 ];
 

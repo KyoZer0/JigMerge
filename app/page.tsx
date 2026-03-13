@@ -3,15 +3,18 @@ import Link from 'next/link';
 import AdSlot from './components/AdSlot';
 import GameEmbedActions from './components/GameEmbedActions';
 import HeroSection from './components/HeroSection';
+import { gameCollections, totalPuzzleCount } from './lib/gameData';
 
 export const metadata: Metadata = {
   title: 'JigMerge – Free Online Jigsaw Solitaire Puzzle Game',
-  description: 'Play JigMerge free online! A unique blend of jigsaw puzzle and solitaire. Drag, drop, and swap tiles to restore beautiful images across 25+ levels in 5 categories.',
+  description: `Play JigMerge free online. Swap and merge tiles across ${totalPuzzleCount}+ puzzles in ${gameCollections.length} live collections.`,
   keywords: ['JigMerge', 'jigsaw puzzle', 'solitaire puzzle', 'online puzzle game', 'free puzzle game', 'brain games', 'tile swap puzzle'],
   alternates: {
     canonical: '/',
   },
 };
+
+const featuredCollections = gameCollections.slice(0, 6);
 
 export default function Home() {
   return (
@@ -39,11 +42,11 @@ export default function Home() {
         borderBottom: '1px solid var(--border-light)',
       }}>
         <div className="container home-stats-grid">
-          {[
-            { value: '25+', label: 'Handcrafted Levels' },
-            { value: '5', label: 'Image Categories' },
+            {[
+            { value: `${totalPuzzleCount}+`, label: 'Live Puzzle Boards' },
+            { value: String(gameCollections.length), label: 'Playable Collections' },
+            { value: '3', label: 'Board Sizes' },
             { value: '0', label: 'Downloads Needed' },
-            { value: '100%', label: 'Free Forever' },
           ].map((stat) => (
             <div key={stat.label} className="home-stat-card">
               <div style={{
@@ -126,7 +129,7 @@ export default function Home() {
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
               </div>
               <h3>Totally Free</h3>
-              <p>No paywalls, no premium tiers, no ads-to-unlock. Every level, every category — free.</p>
+              <p>No paywalls, no premium tiers, no ads-to-unlock. Every live collection stays free to open.</p>
             </article>
           </div>
         </div>
@@ -135,33 +138,35 @@ export default function Home() {
       {/* ── Categories Showcase ── */}
       <section className="section" style={{ background: 'var(--bg-secondary)' }}>
         <div className="container">
-          <h2 className="section-title">Five worlds to explore</h2>
+          <h2 className="section-title">Collections built for every pace</h2>
           <p className="section-subtitle">
-            From serene landscapes to mouthwatering dishes — each category offers
-            a unique visual journey across five progressively harder levels.
+            From quick warm-ups to long expert boards, each collection offers
+            a different board size, pace, and challenge curve inside the live game.
           </p>
 
           <div className="home-categories-grid">
-            {[
-              { name: 'Animals', icon: 'A' },
-              { name: 'Nature', icon: 'N' },
-              { name: 'Cities', icon: 'C' },
-              { name: 'Art', icon: 'R' },
-              { name: 'Food', icon: 'F' },
-            ].map((cat) => (
-              <div key={cat.name} className="home-category-card">
-                <div className="home-category-icon">
-                  {cat.icon}
+            {featuredCollections.map((collection) => (
+              <Link key={collection.slug} href={`/categories/${collection.slug}`} className="home-category-card" style={{ textDecoration: 'none' }}>
+                <div className="home-category-icon" style={{ background: `${collection.color}22`, color: collection.color }}>
+                  {collection.shortName}
                 </div>
                 <span style={{
                   fontSize: '0.8rem',
                   fontWeight: 500,
                   color: 'var(--text-primary)',
                 }}>
-                  {cat.name}
+                  {collection.name}
                 </span>
-              </div>
+                <span style={{ fontSize: '0.7rem', color: 'var(--text-tertiary)' }}>
+                  {collection.gridLabel} · {collection.puzzleCount} puzzles
+                </span>
+              </Link>
             ))}
+          </div>
+          <div style={{ marginTop: '1.25rem', textAlign: 'center' }}>
+            <Link href="/categories" className="btn btn-secondary">
+              Browse All Collections
+            </Link>
           </div>
         </div>
       </section>

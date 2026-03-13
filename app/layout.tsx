@@ -4,6 +4,7 @@ import { Inter, Outfit } from "next/font/google";
 import "./globals.css";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
+import { gameCollections, totalPuzzleCount } from './lib/gameData';
 
 const inter = Inter({
   subsets: ["latin"],
@@ -23,7 +24,7 @@ export const metadata: Metadata = {
     template: "%s | JigMerge",
   },
   description:
-    "JigMerge online! A unique blend of jigsaw puzzle and solitaire card game. Drag, drop, and swap tiles to restore beautiful images across 25+ levels in 5 categories.",
+    `JigMerge online! Drag, drop, and swap tiles across ${totalPuzzleCount}+ puzzles in ${gameCollections.length} live collections.`,
   keywords: [
     "JigMerge",
     "jigsaw puzzle",
@@ -46,14 +47,14 @@ export const metadata: Metadata = {
     siteName: "JigMerge",
     title: "JigMerge – Free Online Jigsaw Solitaire Puzzle Game",
     description:
-      "JigMerge online! Drag, drop, and swap tiles to restore beautiful images. 25+ levels across 5 categories.",
+      `JigMerge online! Drag, drop, and swap tiles across ${totalPuzzleCount}+ puzzles in ${gameCollections.length} live collections.`,
     url: "https://jigmerge.com",
   },
   twitter: {
     card: "summary_large_image",
     title: "JigMerge – Free Online Jigsaw Solitaire Puzzle Game",
     description:
-      "A unique blend of jigsaw puzzle and solitaire. Play free online with 25+ levels!",
+      `A unique blend of jigsaw puzzle and solitaire. Play free online across ${gameCollections.length} live collections!`,
   },
   robots: {
     index: true,
@@ -102,12 +103,7 @@ export default function RootLayout({
               name: "JigMerge",
               url: "https://jigmerge.com",
               description:
-                "Free online jigsaw solitaire puzzle game with 25+ levels across 5 categories.",
-              potentialAction: {
-                "@type": "SearchAction",
-                target: "https://jigmerge.com/categories?q={search_term_string}",
-                "query-input": "required name=search_term_string",
-              },
+                `Free online jigsaw solitaire puzzle game with ${totalPuzzleCount}+ puzzles across ${gameCollections.length} live collections.`,
             }),
           }}
         />

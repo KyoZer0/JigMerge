@@ -4,7 +4,7 @@ import Link from 'next/link';
 export const metadata: Metadata = {
     title: 'How to Play JigMerge – Complete Guide',
     description: 'Learn how to play JigMerge step by step, from the opening preview to tile merges, strategy, and common beginner mistakes.',
-    keywords: ['how to play JigMerge', 'JigMerge guide', 'puzzle game tutorial', 'tile swap instructions'],
+    keywords: ['how to play JigMerge', 'JigMerge guide', 'puzzle strategy guide', 'tile swap instructions'],
     alternates: {
         canonical: '/how-to-play',
     },
