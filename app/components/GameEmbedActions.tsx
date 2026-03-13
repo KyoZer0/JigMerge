@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import type { CSSProperties } from 'react';
 
 type GameEmbedActionsProps = {
@@ -8,19 +9,87 @@ type GameEmbedActionsProps = {
 };
 
 export default function GameEmbedActions({ targetId, shareUrl = '/play' }: GameEmbedActionsProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  useEffect(() => {
+    return () => {
+      document.body.classList.remove('embed-expanded-open');
+      document.getElementById(targetId)?.classList.remove('embed-expanded');
+    };
+  }, [targetId]);
+
   async function handleFullscreen() {
     const target = document.getElementById(targetId);
     if (!target) return;
 
-    if (document.fullscreenElement) {
-      await document.exitFullscreen();
+    const fullscreenTarget = target as HTMLElement & {
+      webkitRequestFullscreen?: () => Promise<void> | void;
+    };
+
+    const fullscreenDocument = document as Document & {
+      webkitExitFullscreen?: () => Promise<void> | void;
+      webkitFullscreenElement?: Element | null;
+    };
+
+    const activeFullscreenEl = document.fullscreenElement || fullscreenDocument.webkitFullscreenElement;
+    const canUseNativeFullscreen = Boolean(
+      fullscreenTarget.requestFullscreen || fullscreenTarget.webkitRequestFullscreen,
+    );
+
+    if (!canUseNativeFullscreen) {
+      const nextExpanded = !target.classList.contains('embed-expanded');
+      target.classList.toggle('embed-expanded', nextExpanded);
+      document.body.classList.toggle('embed-expanded-open', nextExpanded);
+      setIsExpanded(nextExpanded);
       return;
     }
 
-    if (target.requestFullscreen) {
-      await target.requestFullscreen();
+    if (activeFullscreenEl) {
+      if (document.exitFullscreen) {
+        await document.exitFullscreen();
+      } else if (fullscreenDocument.webkitExitFullscreen) {
+        await fullscreenDocument.webkitExitFullscreen();
+      }
+
+      setIsExpanded(false);
+      return;
+    }
+
+    if (fullscreenTarget.requestFullscreen) {
+      await fullscreenTarget.requestFullscreen();
+      setIsExpanded(true);
+      return;
+    }
+
+    if (fullscreenTarget.webkitRequestFullscreen) {
+      await fullscreenTarget.webkitRequestFullscreen();
+      setIsExpanded(true);
     }
   }
+
+  useEffect(() => {
+    function syncExpandedState() {
+      const fullscreenDocument = document as Document & {
+        webkitFullscreenElement?: Element | null;
+      };
+
+      const target = document.getElementById(targetId);
+      const isNativeFullscreen = Boolean(
+        target && (document.fullscreenElement === target || fullscreenDocument.webkitFullscreenElement === target),
+      );
+      const isCssExpanded = Boolean(target?.classList.contains('embed-expanded'));
+
+      setIsExpanded(isNativeFullscreen || isCssExpanded);
+    }
+
+    document.addEventListener('fullscreenchange', syncExpandedState);
+    document.addEventListener('webkitfullscreenchange', syncExpandedState as EventListener);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', syncExpandedState);
+      document.removeEventListener('webkitfullscreenchange', syncExpandedState as EventListener);
+    };
+  }, [targetId]);
 
   async function handleShare() {
     const url = new URL(shareUrl, window.location.origin).toString();
@@ -83,7 +152,7 @@ export default function GameEmbedActions({ targetId, shareUrl = '/play' }: GameE
           <path d="M8 21H5a2 2 0 0 1-2-2v-3" />
           <path d="M16 21h3a2 2 0 0 0 2-2v-3" />
         </svg>
-        <span>Fullscreen</span>
+        <span>{isExpanded ? 'Exit Fullscreen' : 'Fullscreen'}</span>
       </button>
       <button type="button" onClick={handleShare} style={buttonStyle}>
         <svg style={iconStyle} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

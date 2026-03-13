@@ -867,6 +867,8 @@ let dragOffsets = {};
 let startPointer = { x: 0, y: 0 };
 let isMemorizing = false;
 let boardRect = null;
+let activeDragPointerId = null;
+let activeDragPieceEl = null;
 
 // â”€â”€ Timer â”€â”€
 function startTimer() {
@@ -1115,7 +1117,8 @@ function shuffleGrid() {
 // â”€â”€ Pointer Handlers â”€â”€
 function handlePointerDown(e) {
     if (isMemorizing) return;
-    if (e.button !== 0 && e.type !== 'touchstart') return;
+    if (!e.isPrimary) return;
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
 
     const pieceEl = e.target.closest('.piece-container');
     if (!pieceEl) return;
@@ -1127,6 +1130,14 @@ function handlePointerDown(e) {
     draggingGroup = piece.groupId;
     const groupPieceIds = groups[draggingGroup];
     if (!groupPieceIds) return;
+
+    activeDragPointerId = e.pointerId;
+    activeDragPieceEl = pieceEl;
+    if (activeDragPieceEl.setPointerCapture) {
+        activeDragPieceEl.setPointerCapture(activeDragPointerId);
+    }
+
+    e.preventDefault();
 
     playSound('drag');
 
@@ -1159,6 +1170,9 @@ function handlePointerDown(e) {
 
 function handlePointerMove(e) {
     if (!draggingGroup) return;
+    if (e.pointerId !== activeDragPointerId) return;
+
+    e.preventDefault();
 
     const groupPieceIds = groups[draggingGroup];
     const boardX = e.clientX - boardRect.left;
@@ -1174,12 +1188,26 @@ function handlePointerMove(e) {
     });
 }
 
-function handlePointerUp() {
+function handlePointerUp(e) {
+    if (e && e.pointerId !== activeDragPointerId) return;
+
     document.removeEventListener('pointermove', handlePointerMove);
     document.removeEventListener('pointerup', handlePointerUp);
     document.removeEventListener('pointercancel', handlePointerUp);
 
-    if (!draggingGroup) return;
+    if (activeDragPieceEl
+        && activeDragPieceEl.releasePointerCapture
+        && activeDragPieceEl.hasPointerCapture
+        && activeDragPointerId !== null
+        && activeDragPieceEl.hasPointerCapture(activeDragPointerId)) {
+        activeDragPieceEl.releasePointerCapture(activeDragPointerId);
+    }
+
+    if (!draggingGroup) {
+        activeDragPointerId = null;
+        activeDragPieceEl = null;
+        return;
+    }
 
     const groupPieceIds = groups[draggingGroup];
     groupPieceIds.forEach(id => {
@@ -1191,6 +1219,8 @@ function handlePointerUp() {
 
     draggingGroup = null;
     dragOffsets = {};
+    activeDragPointerId = null;
+    activeDragPieceEl = null;
 }
 
 function handleDrop(movedGroupId) {

@@ -907,6 +907,7 @@ body::before {
     flex-shrink: 0;
     z-index: 10;
     transform-origin: center center;
+    touch-action: none;
 }
 
 /* ── Sidebar ── */
@@ -1405,6 +1406,8 @@ body::before {
     will-change: transform, left, top;
     perspective: 1000px;
     z-index: 10;
+    touch-action: none;
+    -webkit-user-drag: none;
 }
 
 .piece-inner {
